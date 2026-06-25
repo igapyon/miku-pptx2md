@@ -18,8 +18,23 @@ function stripEsmBoundary(source) {
     .replace(/^export /gm, "");
 }
 
+function stripVendorExports(source) {
+  const scopedSource = source
+    .replace(/\nexport \{[\s\S]*?\};\n\/\/# sourceMappingURL=.*\n?$/, "\n")
+    .replace(/^\/\/# sourceMappingURL=.*\n?$/gm, "");
+  return `const __mikuMsOfficeCore = (() => {
+${scopedSource}
+return {
+  readOfficePackage
+};
+})();
+const { readOfficePackage } = __mikuMsOfficeCore;
+`;
+}
+
 async function createRuntimeSource() {
   const packageJson = JSON.parse(await readText("package.json"));
+  const msOfficeCoreSource = stripVendorExports(await readText("dist/vendor/miku-ms-office-core-0.5.1.mjs"));
   const xmlUtilsSource = stripEsmBoundary(await readText("dist/js/xml-utils.js"));
   const zipIoSource = stripEsmBoundary(await readText("dist/js/zip-io.js"));
   const coreSource = stripEsmBoundary(await readText("dist/js/core.js"));
@@ -28,9 +43,9 @@ async function createRuntimeSource() {
  * ${productName} runtime bundle
  * Version: ${packageJson.version}
  */
-import { inflateRawSync } from "node:zlib";
-
 export const version = ${JSON.stringify(packageJson.version)};
+
+${msOfficeCoreSource}
 
 ${xmlUtilsSource}
 

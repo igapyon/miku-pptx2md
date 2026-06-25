@@ -44,3 +44,30 @@ Rejected or deferred from sister references:
 - Excel-style table-region detection is not a PPTX first-cut concern.
 - Word document reading order rules do not directly apply to slide layouts.
 - Exact visual reproduction is out of scope for the first cut.
+
+## 2026-06-25 miku-ms-office-core Adoption
+
+Requested direction:
+
+- Use <https://github.com/igapyon/miku-ms-office-core/> for Office ZIP-package-related plumbing.
+
+Checked references:
+
+- Shared miku-soft workflow: `igapyon-miku-soft-developer`
+- Main workflow: `references/10-node-app-workflow.md`
+- Main design reference: `references/miku-soft-basic/miku-soft-10-mainapp-design.md`
+- Local sister repository: `workplace/miku-xlsx2md`
+- Local sister repository: `workplace/miku-docx2md`
+- `miku-ms-office-core` README, API reference, and package consumption notes on GitHub
+
+Reference revision note:
+
+- Checked date: 2026-06-25
+- Installed skill path was readable at `/Users/igapyon/.codex/skills/igapyon-miku-soft-developer`.
+- The installed skill directory was not itself a Git worktree, so no skill commit hash was recorded.
+
+Adopted:
+
+- Vendor the versioned `miku-ms-office-core-0.5.1.mjs` release asset under `src/vendor/`.
+- Use `miku-ms-office-core` for low-level ZIP / Office package entry reading.
+- Keep PPTX slide interpretation and Markdown conversion policy in `miku-pptx2md`.
