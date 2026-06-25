@@ -7,6 +7,7 @@
 - [x] Draft high-level specification
 - [x] Draft planned CLI usage contract
 - [x] Record miku-soft reference and repository conventions
+- [x] Adopt `miku-ms-office-core` for low-level Office package ZIP reading
 - [x] Decide speaker notes default: include by default, with `--no-notes`
 - [x] Decide first summary shape: human-readable text, structured diagnostics internally
 - [ ] Review the first specification with user feedback

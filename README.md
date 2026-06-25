@@ -21,6 +21,10 @@ This project follows the practical shape of these sister main applications:
 
 The initial `miku-pptx2md` direction adopts their CLI-first, local-first, TypeScript-first, ZIP/XML parsing, diagnostics, tests, and runtime bundle separation patterns where they fit PowerPoint.
 
+Low-level Microsoft Office package plumbing is provided by the vendored
+`miku-ms-office-core` release asset. `miku-pptx2md` keeps PowerPoint slide
+interpretation and Markdown conversion policy in this repository.
+
 ## Node CLI
 
 The CLI converts one input presentation at a time and writes Markdown to a file.

@@ -38,3 +38,11 @@ Reason:
 
 Impact:
 `miku-pptx2md` CLI help follows the `USAGE`, `CONTRACT`, `OPTIONS`, `OUTPUTS`, `EXAMPLES`, and `EXIT CODES` shape. `--help` and `--version` are metadata commands that must be used alone. Exit codes are simplified to `0` for success or metadata and `1` for usage, I/O, parse, or runtime errors.
+
+## 2026-06-25: Use miku-ms-office-core for low-level Office package reading
+
+Reason:
+`miku-ms-office-core` is the shared miku-soft foundation for Microsoft Office package plumbing. Its documented expected users include possible future `miku-pptx2md`, and `miku-docx2md` / `miku-xlsx2md` already consume the versioned release asset.
+
+Impact:
+`miku-pptx2md` vendors `miku-ms-office-core-0.5.1.mjs` under `src/vendor/` and uses it for ZIP / Office package entry reading. PPTX slide interpretation, diagnostics vocabulary, and Markdown conversion policy remain product-owned in this repository.

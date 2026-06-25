@@ -9,6 +9,9 @@ The current implementation is a first-cut TypeScript / Node.js converter. It rea
 Planned source-of-truth layout:
 
 ```text
+src/vendor/
+  miku-ms-office-core-<version>.mjs
+  miku-ms-office-core-<version>.mjs.map
 src/ts/
   core.ts
   zip-io.ts
@@ -24,13 +27,16 @@ src/ts/
 ```
 
 The exact file split may change during implementation, but the first cut should avoid a monolithic parser.
+The vendored `miku-ms-office-core` release asset is the low-level Office
+package foundation; product-specific PPTX interpretation remains under
+`src/ts/`.
 
 ## Processing Pipeline
 
 Planned pipeline:
 
 1. Read `.pptx` bytes.
-2. Expand required ZIP entries.
+2. Expand required ZIP entries through `miku-ms-office-core`.
 3. Parse content types.
 4. Parse root relationships.
 5. Parse `ppt/presentation.xml`.

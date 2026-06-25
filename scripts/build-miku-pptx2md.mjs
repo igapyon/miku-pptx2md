@@ -7,9 +7,14 @@ const SOURCE_FILES = [
   "src/ts/zip-io.ts",
   "src/ts/core.ts"
 ];
+const VENDOR_FILES = [
+  "src/vendor/miku-ms-office-core-0.5.1.mjs",
+  "src/vendor/miku-ms-office-core-0.5.1.mjs.map"
+];
 
 const tsModule = await loadTypeScriptModule();
 
+copyVendorFiles();
 for (const relTsPath of SOURCE_FILES) {
   transpileTypeScript(relTsPath, tsModule);
 }
@@ -26,6 +31,15 @@ async function loadTypeScriptModule() {
       "TypeScript is required for build. Install dependencies before running `npm run build`.\n" +
       `Cause: ${reason}`
     );
+  }
+}
+
+function copyVendorFiles() {
+  for (const relPath of VENDOR_FILES) {
+    const sourcePath = path.resolve(ROOT, relPath);
+    const outputPath = path.resolve(ROOT, relPath.replace(/^src\//, "dist/"));
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.copyFileSync(sourcePath, outputPath);
   }
 }
 

@@ -168,8 +168,15 @@ Example:
 
 A `.pptx` file should be treated as a ZIP package.
 
-As with the sister apps, ZIP expansion should be implemented in-house from scratch unless a clear compatibility or security reason requires otherwise.
-The implementation should keep the ZIP handling layer separate from presentation parsing.
+As with the sister apps, shared low-level Microsoft Office package plumbing
+should be provided by `miku-ms-office-core` where practical.
+ZIP expansion, OPC path handling, relationships, content types, Office package
+reading, XML helpers, and structured diagnostics are low-level foundation
+concerns.
+
+`miku-pptx2md` should keep PowerPoint-specific slide interpretation, extraction
+policy, diagnostics vocabulary, and Markdown conversion decisions in this
+repository.
 
 The first cut should read at least the following package entries when present:
 
