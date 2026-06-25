@@ -39,11 +39,17 @@ Keep it concise. Do not use this as a full work log or a replacement for `TODO.m
 - `.github/workflows/ci.yml` runs build and unit tests for branch pushes, pull requests, and `v*` version tag pushes.
 - CLI help and argument handling now follow the sister `miku-docx2md` shape, including metadata-command restrictions, verbose stderr diagnostics, and agent-readable help sections.
 - `npm run build:runtime` generates `bundle/miku-pptx2md-runtime.mjs`, and `npm run smoke:runtime` verifies the runtime export.
+- Current GOAL is a normal maintainability refactoring pass, not a feature expansion pass.
+- The current refactoring pass split the CLI flow into focused helpers for input read, conversion, asset writes, summary writes, and Markdown output.
+- PPTX asset package path validation now lives in `src/ts/asset-path.ts`; the CLI still owns Node filesystem output path resolution.
+- Artifact projection ownership remains in the TypeScript core APIs, and CLI/runtime bundle surfaces act as adapters.
+- A broader `src/ts/core.ts` split was evaluated and deferred to avoid changing public core exports or runtime bundle semantics during this low-risk pass.
 
 ## Next Action
 
-- Await user feedback on the first specification or stable PowerPoint-authored sample `.pptx` files before marking the remaining TODO items complete.
-- If new autonomous scope is desired, the next likely implementation area is additional object-specific extraction or richer diagnostics.
+1. Review the final diff for unrelated changes.
+2. Confirm whether the current refactoring pass should be committed or followed by a second pass.
+3. If another pass is requested, the next natural candidate is a careful parser/renderer file split from `src/ts/core.ts`.
 
 ## Relevant Files
 
@@ -53,21 +59,24 @@ Keep it concise. Do not use this as a full work log or a replacement for `TODO.m
 - `README.md`: user-facing repository state and build/test instructions.
 - `docs/usage.md`: planned and implemented CLI contract.
 - `src/ts/core.ts`: product core conversion behavior.
+- `src/ts/asset-path.ts`: reusable PPTX package asset path validation.
 - `docs/pptx2md-spec.md`: high-level conversion policy, including shape text rendering.
 - `docs/pptx2md-impl-spec.md`: implementation-specific first-cut behavior.
 - `docs/unsupported-features.md`: known unsupported and limited PowerPoint features.
 - `scripts/miku-pptx2md-cli.mjs`: Node CLI entrypoint.
 - `tests/pptx2md-cli.test.mjs`: CLI contract regression tests.
 - `tests/pptx2md-core.test.mjs`: focused core regression test.
-- `.github/workflows/ci.yml`: GitHub Actions build/test workflow including `v*` tag pushes.
-- `scripts/build-runtime-bundle.mjs`: runtime bundle generation.
+- `scripts/build-runtime-bundle.mjs`: runtime bundle export contract.
 - `scripts/smoke-runtime-bundle.mjs`: runtime bundle smoke verification.
+- `.github/workflows/ci.yml`: GitHub Actions build/test workflow including `v*` tag pushes.
 
 ## Watch Outs
 
 - Preserve the miku-soft boundary: this repository is the main TypeScript application, not a Web App repository.
 - Do not overwrite the existing project `TODO.md`; update only relevant task lines or the AI-agent section.
 - Keep generated or local scratch artifacts out of Git unless the repository explicitly documents them as committed outputs.
+- Do not introduce `miku-xlsx2md` workbook-specific options such as ZIP export, encoding modes, output modes, or table detection modes unless PPTX-specific behavior later justifies them.
+- Do not turn this refactoring pass into broad parser restructuring or new PPTX feature extraction.
 
 ## Last Verification
 
@@ -149,3 +158,6 @@ Keep it concise. Do not use this as a full work log or a replacement for `TODO.m
 - 2026-06-25: `npm run build:runtime` passed after preserving inline formatting inside Markdown hyperlink labels.
 - 2026-06-25: `npm run smoke:runtime` passed after preserving inline formatting inside Markdown hyperlink labels.
 - 2026-06-25: `npm run smoke:version` passed after preserving inline formatting inside Markdown hyperlink labels.
+- 2026-06-26: `npm run test:unit` passed after CLI flow split and PPTX asset path helper extraction.
+- 2026-06-26: `npm run build:runtime` passed after CLI flow split and PPTX asset path helper extraction.
+- 2026-06-26: `npm run smoke:runtime` passed after CLI flow split and PPTX asset path helper extraction.

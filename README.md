@@ -59,6 +59,22 @@ npm run cli -- ./sample.pptx --out ./sample.md --verbose
 
 Image asset export, speaker note extraction, table extraction, list extraction, bold/italic/underline text run formatting, external text hyperlink extraction, debug comments, text summary, JSON summary, and summary diagnostics are implemented in first-cut form. Richer object-specific diagnostics are still planned.
 
+## Node Core Contract
+
+The TypeScript / Node.js product core is the owner of conversion semantics and
+structured artifact shapes. The CLI is an adapter around that core for argument
+parsing, file I/O, and stderr/stdout behavior.
+
+Current core-facing entry points are:
+
+- `convertPptxToMarkdown(bytes, options)`: converts local PPTX bytes into Markdown, metadata, summary counts, diagnostics, and resolved image assets.
+- `createPptx2MdSummaryText(result)`: projects a conversion result into the human-readable summary artifact.
+- `createPptx2MdSummaryJsonData(result)`: projects a conversion result into the schema-versioned summary JSON artifact.
+- `createPptx2MdAssetsManifestData(assets)`: projects resolved assets into the schema-versioned sidecar asset manifest.
+
+The generated runtime bundle exports the same core entry points for downstream
+Node, Agent Skill, MCP, and future separated Web adapter workflows.
+
 ## Output Policy
 
 `miku-pptx2md` prioritizes slide structure over visual fidelity.

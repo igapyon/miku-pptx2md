@@ -39,6 +39,9 @@ test("prints agent-readable help without requiring an input file", () => {
   assert.match(helpOutput, /Omit speaker notes from Markdown output\./);
   assert.match(helpOutput, /--include-unsupported-comments/);
   assert.match(helpOutput, /manifest\.json/);
+  assert.match(helpOutput, /Asset manifest:/);
+  assert.match(helpOutput, /JSON with asset path, media type, alt text, byte size, source trace,/);
+  assert.match(helpOutput, /slide index, block index, relationship id, and document position\./);
 });
 
 test("prints package version with product name", () => {

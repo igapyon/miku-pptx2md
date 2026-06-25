@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { convertPptxToMarkdown } from "../dist/js/core.js";
+import { getSafePptxPackagePathParts } from "../dist/js/asset-path.js";
+import {
+  convertPptxToMarkdown,
+  createPptx2MdAssetsManifestData,
+  createPptx2MdSummaryJsonData,
+  createPptx2MdSummaryText
+} from "../dist/js/core.js";
 import {
   createAudioPptx,
   createChartPptx,
@@ -21,6 +27,24 @@ import {
   createTablePptx,
   createVideoPptx
 } from "./pptx-fixture.mjs";
+
+test("validates safe PPTX package asset path parts", () => {
+  assert.deepEqual(getSafePptxPackagePathParts("ppt/media/image1.png"), ["ppt", "media", "image1.png"]);
+
+  for (const unsafePath of [
+    "",
+    "/ppt/media/image1.png",
+    "ppt\\media\\image1.png",
+    "ppt//media/image1.png",
+    "ppt/./media/image1.png",
+    "ppt/media/../image1.png"
+  ]) {
+    assert.throws(
+      () => getSafePptxPackagePathParts(unsafePath),
+      /Unsafe PPTX asset path:/
+    );
+  }
+});
 
 test("converts the first slide into a Markdown level-2 section", () => {
   const result = convertPptxToMarkdown(createMinimalPptx(), { title: "sample" });
@@ -207,6 +231,66 @@ test("extracts resolved image assets and renders placeholders or links", () => {
     imagePathResolver: (asset) => `assets/${asset.sourcePath}`
   });
   assert.match(linked.markdown, /!\[Diagram alt\]\(assets\/ppt\/media\/image1\.png\)/);
+});
+
+test("projects structured summary JSON and asset manifest data", () => {
+  const result = convertPptxToMarkdown(createImagePptx(), { title: "image-sample" });
+
+  assert.equal(createPptx2MdSummaryText(result), [
+    "slides: 1",
+    "slidesWithTitles: 1",
+    "textBlocks: 0",
+    "listItems: 0",
+    "tables: 0",
+    "hyperlinks: 0",
+    "imageAssets: 1",
+    "notesSlides: 0",
+    "warnings: 0",
+    "errors: 0",
+    "diagnostics: 0"
+  ].join("\n"));
+
+  assert.deepEqual(createPptx2MdSummaryJsonData(result), {
+    version: 1,
+    metadata: {},
+    summary: result.summary,
+    diagnostics: [],
+    assets: [
+      {
+        kind: "image",
+        sourcePath: "ppt/media/image1.png",
+        mediaType: "image/png",
+        altText: "Diagram alt",
+        sourceTrace: "picture:image(ppt/media/image1.png):alt(Diagram alt)",
+        slideIndex: 1,
+        blockIndex: 0,
+        relationshipId: "rIdImage1",
+        size: 4
+      }
+    ]
+  });
+
+  assert.deepEqual(createPptx2MdAssetsManifestData(result.assets), {
+    version: 1,
+    assets: [
+      {
+        kind: "image",
+        sourcePath: "ppt/media/image1.png",
+        mediaType: "image/png",
+        altText: "Diagram alt",
+        sourceTrace: "picture:image(ppt/media/image1.png):alt(Diagram alt)",
+        slideIndex: 1,
+        blockIndex: 0,
+        relationshipId: "rIdImage1",
+        size: 4,
+        documentPosition: {
+          slideIndex: 1,
+          blockIndex: 0,
+          blockKind: "image"
+        }
+      }
+    ]
+  });
 });
 
 test("reports unsupported video picture objects as diagnostics", () => {

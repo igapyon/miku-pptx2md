@@ -58,22 +58,14 @@ Update this section while working. Do not rewrite unrelated TODO items.
 
 ### Tasks
 
-- [x] Align README and `docs/usage.md` with the current minimal implementation state.
-- [x] Continue the next PPTX parsing task after documentation is current.
-- [x] Add GitHub Actions build/test workflow for branch, pull request, and `v*` tag pushes.
-- [x] Align CLI help and argument contract with sister application conventions.
-- [x] Add first-cut bold and italic text-run Markdown formatting.
-- [x] Add first-cut underline text-run Markdown-compatible formatting.
-- [x] Preserve inline formatting inside Markdown hyperlink labels.
-- [x] Add first-cut external text hyperlink extraction and summary count.
-- [x] Report unsupported chart graphic frames through diagnostics.
-- [x] Report unsupported SmartArt graphic frames through diagnostics.
-- [x] Report unsupported video picture objects through diagnostics.
-- [x] Report unsupported audio and OLE picture objects through diagnostics.
-- [x] Report unsupported slide comments through diagnostics.
-- [x] Report merged PowerPoint table cells through diagnostics.
-- [x] Extract selected core presentation metadata from `docProps/core.xml`.
-- [x] Add structured summary JSON output for AI and automation workflows.
+- [x] Split `scripts/miku-pptx2md-cli.mjs` `main()` into small helpers for read, convert, asset write, summary write, and Markdown write.
+- [x] Keep CLI argument names and help text aligned with `miku-docx2md`, while avoiding `miku-xlsx2md` workbook-specific options.
+- [x] Move reusable PPTX asset output path validation out of the CLI into a small product-owned helper when it reduces adapter duplication.
+- [x] Continue moving artifact projection ownership into the TypeScript core; keep CLI and runtime bundle as adapters.
+- [x] Evaluate a small `src/ts/core.ts` split only if it can be done without broad parser rewrites. Deferred broad split; only `src/ts/asset-path.ts` was extracted to avoid changing public core exports or runtime bundle semantics.
+- [x] Update README and docs only where refactoring changes public contracts, exported APIs, or operating guidance.
+- [x] Run `npm run test:unit`, `npm run build:runtime`, and `npm run smoke:runtime` after the refactoring pass.
+- [x] Review `git diff` for unrelated changes and update `HANDOFF.md` before stopping.
 
 ### Blockers
 

@@ -3,6 +3,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const SOURCE_FILES = [
+  "src/ts/asset-path.ts",
   "src/ts/xml-utils.ts",
   "src/ts/zip-io.ts",
   "src/ts/core.ts"

@@ -4,6 +4,10 @@ This document records implementation-specific behavior for `miku-pptx2md`.
 
 The current implementation is a first-cut TypeScript / Node.js converter. It reads core presentation metadata and ordered slides, extracts title placeholders and slide text, recognizes ordinary text-bearing shapes with preset geometry, and renders Markdown plus human-readable summary text.
 
+The Node CLI is an adapter over the product core. Product semantics, summary
+text, and structured artifact projections live under `src/ts/`; the CLI handles
+arguments, file I/O, stdout/stderr separation, and safe sidecar writes.
+
 ## Source Layout
 
 Planned source-of-truth layout:
@@ -13,6 +17,7 @@ src/vendor/
   miku-ms-office-core-<version>.mjs
   miku-ms-office-core-<version>.mjs.map
 src/ts/
+  asset-path.ts
   core.ts
   zip-io.ts
   xml-utils.ts
@@ -259,7 +264,9 @@ When the CLI receives `--assets-dir <dir>`, it writes each resolved image under 
 ![Diagram alt](sample.assets/ppt/media/image1.png)
 ```
 
-The CLI also writes `<assets-dir>/manifest.json` with asset kind, source package path, media type, alt text, source trace, slide index, block index, relationship id, document position, and byte size. This intentionally follows the same broad manifest style as `miku-docx2md` while using PPTX-specific source fields.
+The CLI also writes `<assets-dir>/manifest.json` with asset kind, source package path, media type, alt text, source trace, slide index, block index, relationship id, document position, and byte size.
+The core helper `createPptx2MdAssetsManifestData(assets)` owns this manifest projection.
+This intentionally follows the same broad manifest style as `miku-docx2md` while using PPTX-specific source fields.
 
 ## Current Unsupported Picture Diagnostics
 
@@ -277,9 +284,25 @@ Comment text and review metadata are not converted to normal Markdown in the cur
 
 The result object exposes selected core metadata, and CLI summary text includes metadata lines when present.
 The summary object and CLI summary text include counts for slides, titled slides, text blocks, list items, tables, hyperlinks, image assets, notes slides, warnings, errors, and total diagnostics.
+The core helper `createPptx2MdSummaryText(result)` owns this human-readable summary projection.
 
 The CLI also supports `--summary-json-out <file>` for a structured summary artifact with schema `version: 1`.
 The JSON object contains `metadata`, `summary`, `diagnostics`, and `assets` metadata without embedding asset bytes.
+The core helper `createPptx2MdSummaryJsonData(result)` owns this structured JSON projection.
 
 Diagnostics are structured with severity, code, message, and optional source package path.
 When `includeUnsupportedComments` or CLI `--debug` is enabled, diagnostics are appended to Markdown as HTML comments under `## Diagnostics`.
+
+## Current Node Core Contract
+
+The current public product core entry points are:
+
+- `convertPptxToMarkdown(bytes, options)`: converts local PPTX bytes into Markdown, metadata, summary counts, diagnostics, and resolved image assets.
+- `createPptx2MdSummaryText(result)`: projects a conversion result into the human-readable summary artifact.
+- `createPptx2MdSummaryJsonData(result)`: projects a conversion result into the schema-versioned summary JSON artifact.
+- `createPptx2MdAssetsManifestData(assets)`: projects resolved assets into the schema-versioned sidecar asset manifest.
+
+The generated runtime bundle exports the same entry points. This keeps the
+main Node application usable as the upstream contract for local scripts, Agent
+Skills, MCP adapters, and future separated Web adapters without making those
+surfaces duplicate conversion or artifact-shape policy.

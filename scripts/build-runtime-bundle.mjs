@@ -53,11 +53,14 @@ ${zipIoSource}
 
 ${coreSource}
 
-export { convertPptxToMarkdown };
+export { convertPptxToMarkdown, createPptx2MdSummaryText, createPptx2MdSummaryJsonData, createPptx2MdAssetsManifestData };
 
 export default {
   version,
-  convertPptxToMarkdown
+  convertPptxToMarkdown,
+  createPptx2MdSummaryText,
+  createPptx2MdSummaryJsonData,
+  createPptx2MdAssetsManifestData
 };
 `;
 }
