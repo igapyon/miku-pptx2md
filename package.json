@@ -1,0 +1,20 @@
+{
+  "name": "miku-pptx2md",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-miku-pptx2md.mjs",
+    "pretest": "npm run build",
+    "test": "node --test tests/*.test.mjs",
+    "pretest:unit": "npm run build",
+    "test:unit": "node --test tests/*.test.mjs",
+    "cli": "node scripts/miku-pptx2md-cli.mjs",
+    "presmoke:version": "npm run build",
+    "smoke:version": "node scripts/miku-pptx2md-cli.mjs --version"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.7.3"
+  }
+}
