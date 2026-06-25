@@ -1,12 +1,14 @@
 # miku-pptx2md
 
-`miku-pptx2md` is a planned TypeScript / Node.js main application for converting PowerPoint (`.pptx`) presentations into Markdown-oriented artifacts.
+`miku-pptx2md` is a TypeScript / Node.js main application for converting PowerPoint (`.pptx`) presentations into Markdown-oriented artifacts.
 
 This repository will own the product core, Node.js CLI, conversion semantics, diagnostics, fixtures, and tests. A browser Web App surface, if created later, should live in a separated `miku-pptx2md-web` repository.
 
 ## What is this?
 
-`miku-pptx2md` will read `.pptx` files locally and extract slide titles, text boxes, lists, tables, speaker notes, resolved images, hyperlinks, and selected slide metadata into Markdown and related artifacts.
+`miku-pptx2md` reads `.pptx` files locally and currently extracts core presentation metadata, ordered slide sections, title placeholders, text bodies, text-bearing shapes, lists, simple tables, external text hyperlinks, speaker notes, and resolved image references into Markdown-oriented artifacts.
+
+The planned scope also includes richer structured diagnostics and additional object-specific extraction.
 
 The conversion goal is meaningful Markdown extraction, not exact visual reproduction of PowerPoint slides.
 
@@ -19,27 +21,39 @@ This project follows the practical shape of these sister main applications:
 
 The initial `miku-pptx2md` direction adopts their CLI-first, local-first, TypeScript-first, ZIP/XML parsing, diagnostics, tests, and runtime bundle separation patterns where they fit PowerPoint.
 
-## Planned Node CLI
+## Node CLI
 
-The first planned CLI converts one input presentation at a time and writes Markdown to a file.
+The CLI converts one input presentation at a time and writes Markdown to a file.
 
 ```bash
 npm run cli -- ./sample.pptx --out ./sample.md
 ```
 
-Planned asset export:
+It can also print Markdown to stdout when `--out` is omitted.
 
 ```bash
-npm run cli -- ./sample.pptx --out ./sample.md --assets-dir ./sample.assets
+npm run cli -- ./sample.pptx > ./sample.md
 ```
 
-Planned summary output:
+Summary output is implemented as human-readable text:
 
 ```bash
 npm run cli -- ./sample.pptx --out ./sample.md --summary --summary-out ./sample.summary.txt
 ```
 
-The first CLI skeleton is being implemented from the specification. Initial behavior focuses on extracting ordered slide sections into Markdown.
+Structured summary JSON is available for AI and automation workflows:
+
+```bash
+npm run cli -- ./sample.pptx --out ./sample.md --summary-json-out ./sample.summary.json
+```
+
+Verbose progress diagnostics are available on stderr:
+
+```bash
+npm run cli -- ./sample.pptx --out ./sample.md --verbose
+```
+
+Image asset export, speaker note extraction, table extraction, list extraction, bold/italic/underline text run formatting, external text hyperlink extraction, debug comments, text summary, JSON summary, and summary diagnostics are implemented in first-cut form. Richer object-specific diagnostics are still planned.
 
 ## Output Policy
 
@@ -56,21 +70,22 @@ The first CLI skeleton is being implemented from the specification. Initial beha
 
 - High-level specification and design policy: [docs/pptx2md-spec.md](./docs/pptx2md-spec.md)
 - Planned implementation-oriented specification: [docs/pptx2md-impl-spec.md](./docs/pptx2md-impl-spec.md)
-- Planned CLI usage contract: [docs/usage.md](./docs/usage.md)
+- CLI usage contract: [docs/usage.md](./docs/usage.md)
+- Known unsupported PowerPoint features: [docs/unsupported-features.md](./docs/unsupported-features.md)
 - miku-soft shared reference entry point: [docs/miku-soft-reference.md](./docs/miku-soft-reference.md)
 - Specification worklog: [docs/spec-worklog.md](./docs/spec-worklog.md)
 
 ## Build And Test
 
-No executable implementation exists yet.
-
-After implementation starts, this repository should use the same broad shape as the sister Node main applications:
-
 ```bash
 npm install
 npm run build
 npm run test:unit
+npm run build:runtime
+npm run smoke:runtime
 ```
+
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.0`.
 
 ## License
 
