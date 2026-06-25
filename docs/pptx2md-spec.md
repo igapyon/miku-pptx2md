@@ -523,27 +523,33 @@ Planned shape:
 npm run cli -- ./sample.pptx --out ./sample.md
 npm run cli -- ./sample.pptx --out ./sample.md --assets-dir ./sample.assets
 npm run cli -- ./sample.pptx --out ./sample.md --summary
+npm run cli -- ./sample.pptx --out ./sample.md --summary-json-out ./sample.summary.json
 ```
 
-Planned options:
+The CLI should follow the same broad help and argument shape as
+`miku-docx2md`, while keeping the simple `--out` and `--summary` style also
+used by `miku-xlsx2md`. Workbook-specific options such as ZIP export, encoding,
+output modes, formatting modes, and table detection modes should not be copied
+into `miku-pptx2md` unless PPTX-specific behavior later justifies them.
+
+Current options:
 
 - `--out <file>`: write Markdown to a file
 - `--assets-dir <dir>`: export resolved embedded image assets
 - `--summary`: print summary to stdout
 - `--summary-out <file>`: write summary to a file
-- `--include-notes`: include speaker notes when notes are not included by default
+- `--summary-json-out <file>`: write structured summary JSON to a file
 - `--no-notes`: exclude speaker notes when notes are included by default
 - `--debug`: include unsupported trace comments in Markdown
+- `--include-unsupported-comments`: alias for `--debug`
 - `--verbose`: write progress and timing diagnostics to stderr
 - `--version`: print version
 - `--help`: print help
 
-Exit codes should distinguish at least:
+Exit codes:
 
-- `0`: success
-- `1`: expected processing failure
-- `2`: invalid CLI usage
-- `3`: unexpected runtime error
+- `0`: success, or explicit metadata command such as `--version` / `--help`
+- `1`: CLI usage error, file I/O error, parse error, or unexpected runtime error
 
 ## 11. Repository And Runtime Shape
 

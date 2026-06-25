@@ -1,10 +1,14 @@
 # miku-pptx2md Usage
 
 This document describes the CLI contract for `miku-pptx2md`.
+The CLI is a Node adapter over the TypeScript product core: conversion
+semantics, summary text shape, summary JSON shape, diagnostics, and asset manifest shape are owned
+by the core, while the CLI owns argument parsing, file I/O, and stdout/stderr
+behavior.
 
 The current implementation supports one local `.pptx` input, Markdown output, core presentation metadata, sidecar image assets, external text hyperlinks, speaker notes, human-readable summary output, verbose stderr diagnostics, `--version`, and `--help`.
 
-The CLI follows the same broad argument shape as the sister `miku-docx2md` CLI. `--help` and `--version` are metadata commands and must be used without other arguments.
+The CLI follows the same broad argument shape as the sister `miku-docx2md` CLI for Office document to Markdown conversion. It keeps the simple `--out` and `--summary` style also used by `miku-xlsx2md`, but does not adopt workbook-specific options such as ZIP export, encoding, output modes, or table detection modes. `--help` and `--version` are metadata commands and must be used without other arguments.
 
 Some advanced conversion areas, such as richer object-specific diagnostics and additional object-specific extraction, remain planned.
 
@@ -32,6 +36,9 @@ sample.assets/
       image1.png
 ```
 
+The `manifest.json` artifact uses schema `version: 1` and is produced from the
+same core projection as `createPptx2MdAssetsManifestData(result.assets)`.
+
 ## Print Or Save Summary
 
 Print summary to stdout:
@@ -54,8 +61,12 @@ npm run cli -- ./sample.pptx --out ./sample.md --summary-json-out ./sample.summa
 
 When `docProps/core.xml` is present, summary text includes selected core metadata fields such as `metadata.title`, `metadata.creator`, `metadata.created`, and `metadata.modified`.
 The core title is used as the Markdown document heading unless the core API caller provides an explicit title override.
+The same human-readable summary shape is produced by the Node core helper
+`createPptx2MdSummaryText(result)`.
 
 Structured summary JSON uses schema `version: 1` and includes `metadata`, `summary`, `diagnostics`, and sidecar `assets` metadata.
+The same structured summary shape is produced by the Node core helper
+`createPptx2MdSummaryJsonData(result)`.
 
 ## Speaker Notes
 

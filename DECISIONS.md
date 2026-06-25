@@ -46,3 +46,19 @@ Reason:
 
 Impact:
 `miku-pptx2md` vendors `miku-ms-office-core-0.5.1.mjs` under `src/vendor/` and uses it for ZIP / Office package entry reading. PPTX slide interpretation, diagnostics vocabulary, and Markdown conversion policy remain product-owned in this repository.
+
+## 2026-06-26: Plan a normal maintainability refactoring pass
+
+Reason:
+The Node main application now has useful first-cut conversion behavior, CLI output, summary artifacts, runtime bundle exports, and documentation. The next ordinary maintenance step is to reduce adapter duplication and clarify ownership without changing conversion semantics.
+
+Impact:
+The refactoring pass should prioritize small changes: split the CLI flow, keep artifact projection in the TypeScript core, keep runtime exports aligned with core APIs, and update docs only when public contracts change. Parser rewrites, new PPTX feature extraction, and new workbook-style CLI modes are out of scope for this pass.
+
+## 2026-06-26: Do not copy workbook-specific xlsx2md CLI options into pptx2md
+
+Reason:
+`miku-xlsx2md` has workbook-specific options such as ZIP export, encoding, output mode, formatting mode, and table detection mode. Those options do not naturally match a PPTX-to-Markdown presentation converter.
+
+Impact:
+`miku-pptx2md` should keep the simple `--out` and `--summary` style that is shared across sister tools, but its primary CLI shape remains closer to `miku-docx2md`: Markdown output, optional sidecar assets, summary text, structured summary JSON, debug traces, verbose diagnostics, and metadata commands.

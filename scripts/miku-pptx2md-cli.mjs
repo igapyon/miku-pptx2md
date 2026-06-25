@@ -2,7 +2,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { convertPptxToMarkdown } from "../dist/js/core.js";
+import { getSafePptxPackagePathParts } from "../dist/js/asset-path.js";
+import {
+  convertPptxToMarkdown,
+  createPptx2MdAssetsManifestData,
+  createPptx2MdSummaryJsonData,
+  createPptx2MdSummaryText
+} from "../dist/js/core.js";
 
 const FLAG_OPTIONS = {
   "--summary"(options) {
@@ -111,8 +117,12 @@ OUTPUTS
       Core metadata plus text, list, table, hyperlink, image, notes, and diagnostics counts.
 
   Asset directory:
-      Contains resolved embedded image files at package-relative paths
-      such as ppt/media/example.png, plus manifest.json.
+      Contains resolved embedded image files at package-relative paths such as
+      ppt/media/example.png, plus manifest.json.
+
+  Asset manifest:
+      JSON with asset path, media type, alt text, byte size, source trace,
+      slide index, block index, relationship id, and document position.
 
 EXAMPLES
   Write Markdown to a file:
@@ -231,44 +241,8 @@ function formatPresentationError(inputPath, stage, error) {
   return `[${inputName}] ${stage}: ${message}`;
 }
 
-function formatSummary(result) {
-  const metadataLines = Object.entries(result.metadata || {})
-    .map(([key, value]) => `metadata.${key}: ${value}`);
-  return [
-    ...metadataLines,
-    ...(metadataLines.length > 0 ? [""] : []),
-    `slides: ${result.summary.slides}`,
-    `slidesWithTitles: ${result.summary.slidesWithTitles}`,
-    `textBlocks: ${result.summary.textBlocks}`,
-    `listItems: ${result.summary.listItems}`,
-    `tables: ${result.summary.tables}`,
-    `hyperlinks: ${result.summary.hyperlinks}`,
-    `imageAssets: ${result.summary.imageAssets}`,
-    `notesSlides: ${result.summary.notesSlides}`,
-    `warnings: ${result.summary.warnings}`,
-    `errors: ${result.summary.errors}`,
-    `diagnostics: ${result.summary.diagnostics}`
-  ].join("\n");
-}
-
 function createSummaryJsonText(result) {
-  return JSON.stringify({
-    version: 1,
-    metadata: result.metadata,
-    summary: result.summary,
-    diagnostics: result.diagnostics,
-    assets: result.assets.map((asset) => ({
-      kind: asset.kind,
-      sourcePath: asset.sourcePath,
-      mediaType: asset.mediaType,
-      altText: asset.altText,
-      sourceTrace: asset.sourceTrace,
-      slideIndex: asset.slideIndex,
-      blockIndex: asset.blockIndex,
-      relationshipId: asset.relationshipId,
-      size: asset.bytes.byteLength
-    }))
-  }, null, 2) + "\n";
+  return JSON.stringify(createPptx2MdSummaryJsonData(result), null, 2) + "\n";
 }
 
 async function writeBinaryFile(outputPath, content) {
@@ -280,19 +254,8 @@ function toPosixPath(filePath) {
   return filePath.split(path.sep).join("/");
 }
 
-function getSafePackagePathParts(packagePath) {
-  if (!packagePath || packagePath.startsWith("/") || packagePath.includes("\\")) {
-    throw new Error(`Unsafe PPTX asset path: ${packagePath}`);
-  }
-  const parts = packagePath.split("/");
-  if (parts.some((part) => !part || part === "." || part === "..")) {
-    throw new Error(`Unsafe PPTX asset path: ${packagePath}`);
-  }
-  return parts;
-}
-
 function resolveAssetOutputPath(assetsRootDir, packagePath) {
-  const outputPath = path.resolve(assetsRootDir, ...getSafePackagePathParts(packagePath));
+  const outputPath = path.resolve(assetsRootDir, ...getSafePptxPackagePathParts(packagePath));
   const relativePath = path.relative(assetsRootDir, outputPath);
   if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
     throw new Error(`PPTX asset path escapes assets directory: ${packagePath}`);
@@ -301,25 +264,80 @@ function resolveAssetOutputPath(assetsRootDir, packagePath) {
 }
 
 function createAssetsManifestText(assets) {
-  return JSON.stringify({
-    version: 1,
-    assets: assets.map((asset) => ({
-      kind: asset.kind,
-      sourcePath: asset.sourcePath,
-      mediaType: asset.mediaType,
-      altText: asset.altText,
-      sourceTrace: asset.sourceTrace,
-      slideIndex: asset.slideIndex,
-      blockIndex: asset.blockIndex,
-      relationshipId: asset.relationshipId,
-      documentPosition: {
-        slideIndex: asset.slideIndex,
-        blockIndex: asset.blockIndex,
-        blockKind: asset.kind
-      },
-      size: asset.bytes.byteLength
-    }))
-  }, null, 2) + "\n";
+  return JSON.stringify(createPptx2MdAssetsManifestData(assets), null, 2) + "\n";
+}
+
+async function readInputBytes(inputPath) {
+  try {
+    return await fs.readFile(inputPath);
+  } catch (error) {
+    throw new Error(formatPresentationError(inputPath, "read failed", error));
+  }
+}
+
+function createImagePathResolver(resolvedAssetsDir, resolvedOutputPath) {
+  if (!resolvedAssetsDir) {
+    return undefined;
+  }
+  return (asset) => {
+    const outputPath = resolveAssetOutputPath(resolvedAssetsDir, asset.sourcePath);
+    const relativeBase = resolvedOutputPath ? path.dirname(resolvedOutputPath) : process.cwd();
+    return toPosixPath(path.relative(relativeBase, outputPath) || path.basename(outputPath));
+  };
+}
+
+function convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath) {
+  try {
+    const inputStem = path.basename(options.inputPath).replace(/\.[^.]+$/, "");
+    return convertPptxToMarkdown(inputBytes, {
+      fallbackTitle: inputStem,
+      includeNotes: options.includeNotes,
+      includeUnsupportedComments: options.includeUnsupportedComments,
+      imagePathResolver: createImagePathResolver(resolvedAssetsDir, resolvedOutputPath)
+    });
+  } catch (error) {
+    throw new Error(formatPresentationError(inputPath, "parse failed", error));
+  }
+}
+
+async function writeAssets(result, resolvedAssetsDir, inputPath) {
+  if (!resolvedAssetsDir) {
+    return;
+  }
+
+  try {
+    await writeTextFile(path.join(resolvedAssetsDir, "manifest.json"), createAssetsManifestText(result.assets));
+    for (const asset of result.assets) {
+      await writeBinaryFile(resolveAssetOutputPath(resolvedAssetsDir, asset.sourcePath), asset.bytes);
+    }
+  } catch (error) {
+    throw new Error(formatPresentationError(inputPath, "asset write failed", error));
+  }
+}
+
+async function writeSummaryTextOutputs(result, options) {
+  const summaryText = createPptx2MdSummaryText(result);
+
+  if (options.summary) {
+    console.log(summaryText);
+  }
+  if (options.summaryOutPath) {
+    await writeTextFile(path.resolve(options.summaryOutPath), summaryText + "\n");
+  }
+}
+
+async function writeSummaryJsonOutput(result, options) {
+  if (options.summaryJsonOutPath) {
+    await writeTextFile(path.resolve(options.summaryJsonOutPath), createSummaryJsonText(result));
+  }
+}
+
+async function writeMarkdownOutput(result, resolvedOutputPath) {
+  if (resolvedOutputPath) {
+    await writeTextFile(resolvedOutputPath, result.markdown);
+  } else {
+    process.stdout.write(result.markdown);
+  }
 }
 
 async function main() {
@@ -349,78 +367,46 @@ async function main() {
     verbose(`summary-json=${options.summaryJsonOutPath || "disabled"}`);
     verbose(`assets=${options.assetsDir || "disabled"}`);
 
-    let inputBytes;
-    try {
-      inputBytes = await fs.readFile(inputPath);
-    } catch (error) {
-      throw new Error(formatPresentationError(inputPath, "read failed", error));
-    }
+    const inputBytes = await readInputBytes(inputPath);
     verbose(`input-bytes=${inputBytes.byteLength}`);
 
-    let result;
-    try {
-      const inputStem = path.basename(options.inputPath).replace(/\.[^.]+$/, "");
-      result = convertPptxToMarkdown(inputBytes, {
-        fallbackTitle: inputStem,
-        includeNotes: options.includeNotes,
-        includeUnsupportedComments: options.includeUnsupportedComments,
-        imagePathResolver: resolvedAssetsDir
-          ? (asset) => {
-            const outputPath = resolveAssetOutputPath(resolvedAssetsDir, asset.sourcePath);
-            const relativeBase = resolvedOutputPath ? path.dirname(resolvedOutputPath) : process.cwd();
-            return toPosixPath(path.relative(relativeBase, outputPath) || path.basename(outputPath));
-          }
-          : undefined
-      });
-    } catch (error) {
-      throw new Error(formatPresentationError(inputPath, "parse failed", error));
-    }
+    const result = convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath);
     verbose(`converted slides=${result.summary.slides} textBlocks=${result.summary.textBlocks} imageAssets=${result.summary.imageAssets}`);
 
-    const summaryText = formatSummary(result);
-
+    await writeAssets(result, resolvedAssetsDir, inputPath);
     if (resolvedAssetsDir) {
-      try {
-        await writeTextFile(path.join(resolvedAssetsDir, "manifest.json"), createAssetsManifestText(result.assets));
-        for (const asset of result.assets) {
-          await writeBinaryFile(resolveAssetOutputPath(resolvedAssetsDir, asset.sourcePath), asset.bytes);
-        }
-      } catch (error) {
-        throw new Error(formatPresentationError(inputPath, "asset write failed", error));
-      }
       verbose(`assets-written count=${result.assets.length}`);
     }
 
+    try {
+      await writeSummaryTextOutputs(result, options);
+    } catch (error) {
+      throw new Error(formatPresentationError(inputPath, "summary write failed", error));
+    }
     if (options.summary) {
-      console.log(summaryText);
       verbose("summary-written stdout");
     }
     if (options.summaryOutPath) {
-      try {
-        await writeTextFile(path.resolve(options.summaryOutPath), summaryText + "\n");
-      } catch (error) {
-        throw new Error(formatPresentationError(inputPath, "summary write failed", error));
-      }
       verbose(`summary-written ${options.summaryOutPath}`);
     }
+
+    try {
+      await writeSummaryJsonOutput(result, options);
+    } catch (error) {
+      throw new Error(formatPresentationError(inputPath, "summary JSON write failed", error));
+    }
     if (options.summaryJsonOutPath) {
-      try {
-        await writeTextFile(path.resolve(options.summaryJsonOutPath), createSummaryJsonText(result));
-      } catch (error) {
-        throw new Error(formatPresentationError(inputPath, "summary JSON write failed", error));
-      }
       verbose(`summary-json-written ${options.summaryJsonOutPath}`);
     }
 
+    try {
+      await writeMarkdownOutput(result, resolvedOutputPath);
+    } catch (error) {
+      throw new Error(formatPresentationError(inputPath, "markdown write failed", error));
+    }
     if (resolvedOutputPath) {
-      try {
-        await writeTextFile(resolvedOutputPath, result.markdown);
-      } catch (error) {
-        throw new Error(formatPresentationError(inputPath, "markdown write failed", error));
-      }
       verbose(`markdown-written ${options.outPath}`);
     } else {
-      process.stdout.write(result.markdown);
       verbose("markdown-written stdout");
     }
     verbose(`done total-ms=${Date.now() - startedAt}`);
