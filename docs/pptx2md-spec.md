@@ -160,7 +160,7 @@ Example:
 - input: `deck.pptx`
 - output: `deck.md`
 - assets: `deck.assets/`
-- summary: `deck.summary.txt` or `deck.summary.json` after the summary format is finalized
+- summary: `deck.summary.txt` for human-readable text or `deck.summary.json` for schema-versioned structured output
 
 ## 6. Parsing Model
 
@@ -336,7 +336,7 @@ Underline, font size, color, and theme styling should not be treated as semantic
 
 PowerPoint tables should become Markdown tables when the grid is simple enough.
 
-Merged cells and complex tables may use placeholder text or fallback bullet sections after the exact policy is implemented.
+Merged cells are flattened into Markdown tables and reported through diagnostics because Markdown cannot preserve the original merge structure.
 Unsupported table structure should be visible in diagnostics.
 
 ### 7.8 Images
@@ -374,7 +374,15 @@ This covers common shapes such as:
 - simple grouped text-bearing shapes when the text is directly readable
 
 The Markdown output should preserve the text content, not the exact geometry.
-The first cut may emit it as ordinary paragraphs or bullets under the owning slide.
+The first cut should preserve that the text came from an ordinary shape when doing so improves reviewability.
+Recommended first-cut Markdown shape:
+
+```markdown
+> [Shape: rect] Decision box
+> Follow-up label
+```
+
+Body placeholders and true text boxes may still be emitted as ordinary paragraphs under the owning slide.
 It should not attempt to describe position, size, color, connector routing, or z-order as prose.
 
 #### Export As Assets
@@ -549,8 +557,8 @@ Downstream Web App ownership should be separated into `miku-pptx2md-web` if a br
 These decisions should be finalized before implementation begins:
 
 - Speaker notes are included by default. `--no-notes` excludes them.
-- Summary starts as human-readable text. Diagnostics should remain structured internally so JSON output can be added later after the schema stabilizes.
+- Summary is available as human-readable text and as schema-versioned JSON. Diagnostics should remain structured internally and be represented directly in JSON summary output.
 - Image export should preserve safe original package paths under the sidecar asset directory, such as `ppt/media/image1.png`.
-- How should complex merged PowerPoint tables be represented?
-- How much inline formatting should be preserved in the first implementation?
-- Should slide comments be ignored, diagnosed, or exposed later?
+- Merged PowerPoint tables are represented as flattened Markdown tables with diagnostics.
+- Bold and italic text runs are preserved as Markdown emphasis in the first implementation. Underline text runs are preserved as Markdown-compatible inline HTML.
+- Slide comments are diagnosed in the first cut and may be exposed as structured content later.
