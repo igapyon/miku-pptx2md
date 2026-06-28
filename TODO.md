@@ -66,6 +66,9 @@ Update this section while working. Do not rewrite unrelated TODO items.
 - [x] Update README and docs only where refactoring changes public contracts, exported APIs, or operating guidance.
 - [x] Run `npm run test:unit`, `npm run build:runtime`, and `npm run smoke:runtime` after the refactoring pass.
 - [x] Review `git diff` for unrelated changes and update `HANDOFF.md` before stopping.
+- [x] Compare GitHub Actions release asset workflow against the miku-soft Node main application standard.
+- [x] Add CLI bundle generation and `smoke:bundle` so release assets include CLI, runtime, and source artifacts.
+- [x] Replace tag-push-only release asset workflow with GitHub Release published workflow for CLI/runtime bundles.
 
 ### Blockers
 

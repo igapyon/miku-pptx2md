@@ -101,14 +101,17 @@ Node, Agent Skill, MCP, and future separated Web adapter workflows.
 npm install
 npm run build
 npm run test:unit
+npm run build:bundle
+npm run smoke:bundle
 npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.1`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.2`.
 
-When a `v*` version tag is pushed, the release asset workflow also builds and smokes the runtime bundle, creates a source archive, ensures the GitHub Release exists, and uploads:
+When a GitHub Release for a `v*` tag is published, the release asset workflow builds and smokes the CLI and runtime bundles, creates a source archive, and uploads:
 
+- `miku-pptx2md-<version>.mjs`
 - `miku-pptx2md-runtime-<version>.mjs`
 - `miku-pptx2md-sources-<version>.tgz`
 
