@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,6 +17,17 @@ function stripEsmBoundary(source) {
   return source
     .replace(/^import .*?;\n/gm, "")
     .replace(/^export /gm, "");
+}
+
+function stripCliImports(source) {
+  return source
+    .replace(/^#!.*\n/, "")
+    .replace(/^import .*?;\n/gm, "")
+    .replace(/^import \{[\s\S]*?\} from .*?;\n/gm, "")
+    .replace(
+      /async function readPackageVersion\(\) \{[\s\S]*?\n\}/,
+      "async function readPackageVersion() {\n  return version;\n}"
+    );
 }
 
 function stripVendorExports(source) {
@@ -65,11 +77,48 @@ export default {
 `;
 }
 
+async function createCliSource(runtimeSource) {
+  const assetPathSource = stripEsmBoundary(await readText("dist/js/asset-path.js"));
+  const cliSource = stripCliImports(await readText("scripts/miku-pptx2md-cli.mjs"));
+
+  return `#!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+
+${runtimeSource}
+
+${assetPathSource}
+
+${cliSource}
+`;
+}
+
+async function createSourceArchive() {
+  const outputPath = path.resolve(bundleDir, `${productName}-sources.tgz`);
+  execFileSync("git", [
+    "archive",
+    "--format=tar.gz",
+    `--prefix=${productName}-sources/`,
+    "-o",
+    outputPath,
+    "HEAD"
+  ], { cwd: rootDir, stdio: "inherit" });
+  return outputPath;
+}
+
 async function main() {
   await fs.mkdir(bundleDir, { recursive: true });
-  const outputPath = path.resolve(bundleDir, `${productName}-runtime.mjs`);
-  await fs.writeFile(outputPath, await createRuntimeSource(), "utf8");
-  console.log(`[build:runtime] generated ${path.relative(rootDir, outputPath)}`);
+  const runtimeSource = await createRuntimeSource();
+  const runtimeOutputPath = path.resolve(bundleDir, `${productName}-runtime.mjs`);
+  const cliOutputPath = path.resolve(bundleDir, `${productName}.mjs`);
+  const sourceArchivePath = await createSourceArchive();
+
+  await fs.writeFile(runtimeOutputPath, runtimeSource, "utf8");
+  await fs.writeFile(cliOutputPath, await createCliSource(runtimeSource), { encoding: "utf8", mode: 0o755 });
+
+  console.log(`[build:runtime] generated ${path.relative(rootDir, runtimeOutputPath)}`);
+  console.log(`[build:runtime] generated ${path.relative(rootDir, cliOutputPath)}`);
+  console.log(`[build:runtime] generated ${path.relative(rootDir, sourceArchivePath)}`);
 }
 
 main().catch((error) => {
