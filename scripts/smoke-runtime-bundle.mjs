@@ -1,10 +1,12 @@
+import fs from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { createMinimalPptx } from "../tests/pptx-fixture.mjs";
 
+const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const runtime = await import(pathToFileURL("bundle/miku-pptx2md-runtime.mjs"));
 
-if (runtime.version !== "0.4.2") {
+if (runtime.version !== packageJson.version) {
   throw new Error(`Unexpected runtime version: ${runtime.version}`);
 }
 

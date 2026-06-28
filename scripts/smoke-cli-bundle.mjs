@@ -1,9 +1,12 @@
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
 
 const cliPath = "bundle/miku-pptx2md.mjs";
+const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const expectedVersionOutput = `miku-pptx2md ${packageJson.version}\n`;
 
 const versionOutput = execFileSync(process.execPath, [cliPath, "--version"], { encoding: "utf8" });
-if (versionOutput !== "miku-pptx2md 0.4.2\n") {
+if (versionOutput !== expectedVersionOutput) {
   throw new Error(`Unexpected CLI bundle version output: ${JSON.stringify(versionOutput)}`);
 }
 

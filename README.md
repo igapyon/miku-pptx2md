@@ -107,7 +107,7 @@ npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.2`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.3`.
 
 When a GitHub Release for a `v*` tag is published, the release asset workflow builds and smokes the CLI and runtime bundles, creates a source archive, and uploads:
 

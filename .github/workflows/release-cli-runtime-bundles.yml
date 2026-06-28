@@ -8,6 +8,7 @@ permissions:
   contents: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PRODUCT_NAME: miku-pptx2md
   RELEASE_ASSETS_DIR: release-assets
 
