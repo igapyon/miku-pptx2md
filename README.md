@@ -105,7 +105,12 @@ npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.0`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.1`.
+
+When a `v*` version tag is pushed, the release asset workflow also builds and smokes the runtime bundle, creates a source archive, ensures the GitHub Release exists, and uploads:
+
+- `miku-pptx2md-runtime-<version>.mjs`
+- `miku-pptx2md-sources-<version>.tgz`
 
 ## License
 

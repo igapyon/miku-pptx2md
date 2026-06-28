@@ -4,7 +4,7 @@ import { createMinimalPptx } from "../tests/pptx-fixture.mjs";
 
 const runtime = await import(pathToFileURL("bundle/miku-pptx2md-runtime.mjs"));
 
-if (runtime.version !== "0.4.0") {
+if (runtime.version !== "0.4.1") {
   throw new Error(`Unexpected runtime version: ${runtime.version}`);
 }
 
