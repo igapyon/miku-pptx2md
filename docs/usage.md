@@ -78,7 +78,7 @@ title: "sample"
 type: converted
 conversion:
   tool: miku-pptx2md
-  version: "0.5.0"
+  version: "0.5.1"
   notes: include
   unsupported_comments: exclude
 ---

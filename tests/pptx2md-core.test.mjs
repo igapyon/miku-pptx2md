@@ -68,11 +68,11 @@ test("can include YAML front matter when requested", () => {
   const result = convertPptxToMarkdown(createMinimalPptx(), {
     title: "sample.pptx",
     frontMatter: "include",
-    toolVersion: "0.5.0",
+    toolVersion: "0.5.1",
     includeUnsupportedComments: true
   });
 
-  assert.match(result.markdown, /^---\ntitle: "sample\.pptx"\ntype: converted\nconversion:\n  tool: miku-pptx2md\n  version: "0\.5\.0"\n  notes: include\n  unsupported_comments: include\n---\n\n# sample\.pptx\n\n## Slide 1: Overview/m);
+  assert.match(result.markdown, /^---\ntitle: "sample\.pptx"\ntype: converted\nconversion:\n  tool: miku-pptx2md\n  version: "0\.5\.1"\n  notes: include\n  unsupported_comments: include\n---\n\n# sample\.pptx\n\n## Slide 1: Overview/m);
 });
 
 test("extracts core presentation metadata and uses title as fallback heading", () => {

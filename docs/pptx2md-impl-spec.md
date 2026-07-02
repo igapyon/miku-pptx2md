@@ -18,6 +18,7 @@ src/vendor/
   miku-ms-office-core-<version>.mjs.map
 src/ts/
   asset-path.ts
+  artifacts.ts
   core.ts
   zip-io.ts
   xml-utils.ts
@@ -32,6 +33,8 @@ src/ts/
 ```
 
 The exact file split may change during implementation, but the first cut should avoid a monolithic parser.
+Artifact projection types and helpers live in `artifacts.ts`, while `core.ts`
+continues to re-export the public projection helpers for compatibility.
 The vendored `miku-ms-office-core` release asset is the low-level Office
 package foundation; product-specific PPTX interpretation remains under
 `src/ts/`.
