@@ -15,6 +15,7 @@ async function readText(relPath) {
 
 function stripEsmBoundary(source) {
   return source
+    .replace(/^export \{[\s\S]*?\} from .*?;\n/gm, "")
     .replace(/^import .*?;\n/gm, "")
     .replace(/^export /gm, "");
 }
@@ -47,6 +48,7 @@ const { readOfficePackage } = __mikuMsOfficeCore;
 async function createRuntimeSource() {
   const packageJson = JSON.parse(await readText("package.json"));
   const msOfficeCoreSource = stripVendorExports(await readText("dist/vendor/miku-ms-office-core-0.5.1.mjs"));
+  const artifactsSource = stripEsmBoundary(await readText("dist/js/artifacts.js"));
   const xmlUtilsSource = stripEsmBoundary(await readText("dist/js/xml-utils.js"));
   const zipIoSource = stripEsmBoundary(await readText("dist/js/zip-io.js"));
   const coreSource = stripEsmBoundary(await readText("dist/js/core.js"));
@@ -58,6 +60,8 @@ async function createRuntimeSource() {
 export const version = ${JSON.stringify(packageJson.version)};
 
 ${msOfficeCoreSource}
+
+${artifactsSource}
 
 ${xmlUtilsSource}
 
