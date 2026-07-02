@@ -4,6 +4,8 @@ import { readZipEntries } from "./zip-io.js";
 export interface Pptx2MdOptions {
   title?: string;
   fallbackTitle?: string;
+  frontMatter?: "include" | "exclude" | string | null;
+  toolVersion?: string;
   includeNotes?: boolean;
   includeUnsupportedComments?: boolean;
   imagePathResolver?: (asset: Pptx2MdAsset) => string;
@@ -39,6 +41,7 @@ export interface Pptx2MdSummary {
   hyperlinks: number;
   imageAssets: number;
   notesSlides: number;
+  comments: number;
   warnings: number;
   errors: number;
   diagnostics: number;
@@ -105,6 +108,7 @@ const SUMMARY_FIELDS: Array<keyof Pptx2MdSummary> = [
   "hyperlinks",
   "imageAssets",
   "notesSlides",
+  "comments",
   "warnings",
   "errors",
   "diagnostics"
@@ -116,6 +120,7 @@ interface SlideModel {
   title?: string;
   blocks: SlideBlock[];
   notes: TextParagraph[];
+  comments: SlideComment[];
 }
 
 interface ParagraphBlock {
@@ -146,6 +151,13 @@ interface TextParagraph {
   hyperlinkCount: number;
   listKind?: "bullet" | "ordered";
   level: number;
+}
+
+interface SlideComment {
+  label: string;
+  text: string;
+  authorId?: string;
+  date?: string;
 }
 
 export function convertPptxToMarkdown(bytes: Uint8Array, options: Pptx2MdOptions = {}): Pptx2MdResult {
@@ -182,6 +194,7 @@ function createSummary(
     hyperlinks: slides.reduce((sum, slide) => sum + countHyperlinks(slide), 0),
     imageAssets: assets.length,
     notesSlides: slides.filter((slide) => slide.notes.length > 0).length,
+    comments: slides.reduce((sum, slide) => sum + slide.comments.length, 0),
     warnings: diagnostics.filter((diagnostic) => diagnostic.severity === "warning").length,
     errors: diagnostics.filter((diagnostic) => diagnostic.severity === "error").length,
     diagnostics: diagnostics.length
@@ -304,7 +317,7 @@ function parseSlides(
         message: `Slide relationship was not found: ${relId}`,
         source: "ppt/presentation.xml"
       });
-      return { index: index + 1, path: "", blocks: [], notes: [] };
+      return { index: index + 1, path: "", blocks: [], notes: [], comments: [] };
     }
 
     const slideXml = readTextEntry(entries, slidePath);
@@ -315,29 +328,57 @@ function parseSlides(
         message: `Slide part was not found: ${slidePath}`,
         source: slidePath
       });
-      return { index: index + 1, path: slidePath, blocks: [], notes: [] };
+      return { index: index + 1, path: slidePath, blocks: [], notes: [], comments: [] };
     }
 
     const slideRelationships = parseSlideRelationships(entries, slidePath);
-    addUnsupportedSlideCommentDiagnostics(slideRelationships, slidePath, diagnostics);
+    const comments = parseSlideComments(entries, slidePath, slideRelationships, diagnostics);
     const notes = parseSlideNotes(entries, slidePath, slideRelationships, diagnostics);
-    return parseSlideXml(slideXml, slidePath, index + 1, notes, slideRelationships, entries, contentTypes, diagnostics);
+    return parseSlideXml(slideXml, slidePath, index + 1, notes, comments, slideRelationships, entries, contentTypes, diagnostics);
   });
 }
 
-function addUnsupportedSlideCommentDiagnostics(
-  slideRelationships: RelationshipEntry[],
+function parseSlideComments(
+  entries: Map<string, Uint8Array>,
   slidePath: string,
+  slideRelationships: RelationshipEntry[],
   diagnostics: Pptx2MdDiagnostic[]
-): void {
-  for (const rel of slideRelationships.filter((relationship) => relationship.type.endsWith("/comments"))) {
-    diagnostics.push({
-      severity: "warning",
-      code: "unsupported-comments",
-      message: `PowerPoint slide comments were found but are not converted to Markdown: ${rel.target}`,
-      source: slidePath
-    });
+): SlideComment[] {
+  const slideRelsPath = buildRelationshipsPath(slidePath);
+  const comments: SlideComment[] = [];
+  const commentRels = slideRelationships.filter((relationship) => relationship.type.endsWith("/comments"));
+
+  for (const rel of commentRels) {
+    const commentsXml = readTextEntry(entries, rel.target);
+    if (!commentsXml) {
+      diagnostics.push({
+        severity: "warning",
+        code: "missing-comments-part",
+        message: `Slide comments part was not found: ${rel.target}`,
+        source: slideRelsPath
+      });
+      continue;
+    }
+    comments.push(...parseSlideCommentsXml(commentsXml, comments.length));
   }
+
+  return comments;
+}
+
+function parseSlideCommentsXml(xml: string, offset: number): SlideComment[] {
+  return collectTagBlocks(xml, "cm")
+    .map((commentXml, index) => {
+      const commentTag = getFirstTag(commentXml, "cm");
+      const authorId = commentTag ? getAttribute(commentTag, "authorId") : undefined;
+      const date = commentTag ? getAttribute(commentTag, "dt") : undefined;
+      return {
+        label: `comment-${offset + index + 1}`,
+        text: readElementText(commentXml, "text") || "",
+        ...(authorId ? { authorId } : {}),
+        ...(date ? { date } : {})
+      };
+    })
+    .filter((comment) => comment.text.length > 0);
 }
 
 function getRelationshipId(tag: string): string | undefined {
@@ -446,6 +487,7 @@ function parseSlideXml(
   slidePath: string,
   index: number,
   notes: TextParagraph[],
+  comments: SlideComment[],
   slideRelationships: RelationshipEntry[],
   entries: Map<string, Uint8Array>,
   contentTypes: ContentTypes,
@@ -519,7 +561,8 @@ function parseSlideXml(
     path: slidePath,
     title,
     blocks,
-    notes
+    notes,
+    comments
   };
 }
 
@@ -915,7 +958,7 @@ function countTextBlocks(slide: SlideModel): number {
       return sum;
     }
     return sum + block.paragraphs.length;
-  }, slide.notes.length);
+  }, slide.notes.length + slide.comments.length);
 }
 
 function collectAssets(slides: SlideModel[]): Pptx2MdAsset[] {
@@ -984,6 +1027,13 @@ function renderMarkdown(
         lines.push(renderParagraph(note), "");
       }
     }
+
+    if (slide.comments.length > 0) {
+      lines.push("### Comments", "");
+      for (const comment of slide.comments) {
+        lines.push(renderSlideComment(comment), "");
+      }
+    }
   }
 
   if (options.includeUnsupportedComments && diagnostics.length > 0) {
@@ -994,7 +1044,36 @@ function renderMarkdown(
     }
   }
 
-  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+  const body = lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
+  return shouldIncludeFrontMatter(options)
+    ? `${createFrontMatter(title, options)}\n\n${body}\n`
+    : `${body}\n`;
+}
+
+function shouldIncludeFrontMatter(options: Pptx2MdOptions): boolean {
+  return String(options.frontMatter || "exclude") !== "exclude";
+}
+
+function createFrontMatter(title: string, options: Pptx2MdOptions): string {
+  return [
+    "---",
+    `title: ${quoteYamlString(title)}`,
+    "type: converted",
+    "conversion:",
+    "  tool: miku-pptx2md",
+    `  version: ${quoteYamlString(String(options.toolVersion || "unknown"))}`,
+    `  notes: ${options.includeNotes === false ? "exclude" : "include"}`,
+    `  unsupported_comments: ${options.includeUnsupportedComments ? "include" : "exclude"}`,
+    "---"
+  ].join("\n");
+}
+
+function quoteYamlString(value: string): string {
+  return `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, "\\\"").replace(/\r/g, "\\r").replace(/\n/g, "\\n")}"`;
+}
+
+function renderSlideComment(comment: SlideComment): string {
+  return `- [${escapeMarkdownText(comment.label)}] ${escapeMarkdownText(comment.text)}`;
 }
 
 function renderTableBlock(block: TableBlock): string[] {

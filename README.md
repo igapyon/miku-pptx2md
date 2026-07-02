@@ -57,7 +57,7 @@ Verbose progress diagnostics are available on stderr:
 npm run cli -- ./sample.pptx --out ./sample.md --verbose
 ```
 
-Image asset export, speaker note extraction, table extraction, list extraction, bold/italic/underline text run formatting, external text hyperlink extraction, debug comments, text summary, JSON summary, and summary diagnostics are implemented in first-cut form. Richer object-specific diagnostics are still planned.
+Image asset export, speaker note extraction, table extraction, list extraction, bold/italic/underline text run formatting, external text hyperlink extraction, YAML front matter, debug comments, text summary, JSON summary, and summary diagnostics are implemented in first-cut form. Richer object-specific diagnostics are still planned.
 
 ## Node Core Contract
 
@@ -107,7 +107,7 @@ npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.4.3`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.5.0`.
 
 When a GitHub Release for a `v*` tag is published, the release asset workflow builds and smokes the CLI and runtime bundles, creates a source archive, and uploads:
 

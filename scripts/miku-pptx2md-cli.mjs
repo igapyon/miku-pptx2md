@@ -10,6 +10,8 @@ import {
   createPptx2MdSummaryText
 } from "../dist/js/core.js";
 
+const FRONT_MATTER_MODES = new Set(["include", "exclude"]);
+
 const FLAG_OPTIONS = {
   "--summary"(options) {
     options.summary = true;
@@ -47,6 +49,14 @@ const VALUE_OPTIONS = {
   "--summary-json-out": {
     apply(options, value) {
       options.summaryJsonOutPath = value;
+    }
+  },
+  "--front-matter": {
+    apply(options, value) {
+      if (!FRONT_MATTER_MODES.has(value)) {
+        throw new Error(`Invalid front matter mode: ${value}`);
+      }
+      options.frontMatter = value;
     }
   }
 };
@@ -90,6 +100,9 @@ OPTIONS
   --summary-json-out <file>
       Write structured summary JSON to this file. Parent directories are created.
 
+  --front-matter <mode>
+      include or exclude. Default: include.
+
   --no-notes
       Omit speaker notes from Markdown output.
 
@@ -111,7 +124,9 @@ OPTIONS
 
 OUTPUTS
   Markdown:
-      Main converted presentation structure. Each slide is emitted as a section.
+      Main converted presentation structure. Starts with YAML front matter by
+      default; use --front-matter exclude to omit it. Each slide is emitted as
+      a section.
 
   Summary:
       Core metadata plus text, list, table, hyperlink, image, notes, and diagnostics counts.
@@ -136,6 +151,9 @@ EXAMPLES
 
   Write structured summary JSON:
     node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --summary-json-out ./sample.summary.json
+
+  Omit YAML front matter:
+    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --front-matter exclude
 
   Print a summary:
     node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --summary
@@ -181,6 +199,7 @@ function parseArgs(args) {
     summaryOutPath: null,
     summaryJsonOutPath: null,
     summary: false,
+    frontMatter: "include",
     includeNotes: true,
     includeUnsupportedComments: false,
     verbose: false
@@ -286,11 +305,13 @@ function createImagePathResolver(resolvedAssetsDir, resolvedOutputPath) {
   };
 }
 
-function convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath) {
+function convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion) {
   try {
     const inputStem = path.basename(options.inputPath).replace(/\.[^.]+$/, "");
     return convertPptxToMarkdown(inputBytes, {
       fallbackTitle: inputStem,
+      frontMatter: options.frontMatter,
+      toolVersion: packageVersion,
       includeNotes: options.includeNotes,
       includeUnsupportedComments: options.includeUnsupportedComments,
       imagePathResolver: createImagePathResolver(resolvedAssetsDir, resolvedOutputPath)
@@ -359,6 +380,7 @@ async function main() {
   const inputPath = path.resolve(options.inputPath);
   const resolvedOutputPath = options.outPath ? path.resolve(options.outPath) : null;
   const resolvedAssetsDir = options.assetsDir ? path.resolve(options.assetsDir) : null;
+  const packageVersion = await readPackageVersion();
 
   try {
     verbose(`input=${options.inputPath}`);
@@ -370,7 +392,7 @@ async function main() {
     const inputBytes = await readInputBytes(inputPath);
     verbose(`input-bytes=${inputBytes.byteLength}`);
 
-    const result = convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath);
+    const result = convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion);
     verbose(`converted slides=${result.summary.slides} textBlocks=${result.summary.textBlocks} imageAssets=${result.summary.imageAssets}`);
 
     await writeAssets(result, resolvedAssetsDir, inputPath);

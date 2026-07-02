@@ -63,7 +63,7 @@ The first cut intentionally excludes visual and layout-heavy reproduction.
 - geometric shape rendering
 - video and audio media extraction beyond diagnostics
 - embedded OLE object conversion
-- comments and review metadata
+- comment review metadata beyond basic comment text
 - master slide rendering
 - pixel-perfect image placement
 
@@ -150,6 +150,17 @@ The primary output should be:
 
 When resolved embedded images are exported explicitly, a sidecar asset directory may accompany the Markdown output.
 The primary output remains the Markdown document; sidecar image export does not imply slide layout reconstruction.
+
+CLI output includes document-level YAML front matter by default. The front matter identifies the converted PPTX artifact and records conversion settings that materially affect the Markdown body. It can be omitted with `--front-matter exclude`.
+
+The front matter contract is intentionally small:
+
+- `title`: Markdown document title
+- `type`: stable artifact type, currently `converted`
+- `conversion.tool`: `miku-pptx2md`
+- `conversion.version`: converter package version
+- `conversion.notes`: `include` or `exclude`
+- `conversion.unsupported_comments`: `include` or `exclude`
 
 ### 5.3 Naming
 
@@ -539,6 +550,7 @@ Current options:
 - `--summary`: print summary to stdout
 - `--summary-out <file>`: write summary to a file
 - `--summary-json-out <file>`: write structured summary JSON to a file
+- `--front-matter <mode>`: `include` or `exclude`; default is `include`
 - `--no-notes`: exclude speaker notes when notes are included by default
 - `--debug`: include unsupported trace comments in Markdown
 - `--include-unsupported-comments`: alias for `--debug`
@@ -574,4 +586,4 @@ These decisions should be finalized before implementation begins:
 - Image export should preserve safe original package paths under the sidecar asset directory, such as `ppt/media/image1.png`.
 - Merged PowerPoint tables are represented as flattened Markdown tables with diagnostics.
 - Bold and italic text runs are preserved as Markdown emphasis in the first implementation. Underline text runs are preserved as Markdown-compatible inline HTML.
-- Slide comments are diagnosed in the first cut and may be exposed as structured content later.
+- Slide comment text is rendered under each slide's `### Comments` section. Rich review metadata remains limited.

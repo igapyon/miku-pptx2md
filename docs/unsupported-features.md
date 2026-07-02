@@ -17,10 +17,10 @@ This document records known unsupported or intentionally limited areas in the cu
 - external text hyperlinks through slide relationships
 - speaker notes through slide notes relationships
 - resolved embedded images as placeholders or sidecar assets
+- slide comment text as per-slide Markdown comment sections
 - human-readable summary counts, structured summary JSON, and structured diagnostics
 - unsupported chart and SmartArt graphic frames are reported as diagnostics
 - unsupported video, audio, and OLE picture objects are reported as diagnostics
-- unsupported slide comments are reported as diagnostics
 - merged table cells are flattened with diagnostics
 
 ## Unsupported Or Limited
@@ -33,7 +33,7 @@ This document records known unsupported or intentionally limited areas in the cu
 - connector routing and geometry-dependent diagram meaning
 - video and audio extraction beyond diagnostics
 - embedded OLE object conversion beyond diagnostics
-- comments and review metadata beyond diagnostics
+- comment author and review metadata beyond basic comment text
 - master slide rendering
 - pixel-perfect slide or object rendering
 - complex table layout such as exact merged-cell reconstruction and style-driven layout
@@ -41,7 +41,7 @@ This document records known unsupported or intentionally limited areas in the cu
 
 Unsupported chart and SmartArt graphic frames are detected and reported as warnings, but chart data, diagram structure, and visual reconstruction are not converted to Markdown.
 Unsupported video, audio, and OLE picture objects are detected and reported as warnings, but their media content is not exported or converted to Markdown.
-Slide comments are detected through slide relationships and reported as warnings, but comment text and review metadata are not converted to Markdown.
+Slide comments are detected through slide relationships and their text is rendered under each slide's `### Comments` section. Rich review metadata is not rendered.
 Tables with merged cells are rendered as flattened Markdown tables and reported as warnings because Markdown cannot preserve the original merge structure.
 
 ## Diagnostic Policy

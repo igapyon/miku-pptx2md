@@ -6,7 +6,7 @@ semantics, summary text shape, summary JSON shape, diagnostics, and asset manife
 by the core, while the CLI owns argument parsing, file I/O, and stdout/stderr
 behavior.
 
-The current implementation supports one local `.pptx` input, Markdown output, core presentation metadata, sidecar image assets, external text hyperlinks, speaker notes, human-readable summary output, verbose stderr diagnostics, `--version`, and `--help`.
+The current implementation supports one local `.pptx` input, Markdown output, YAML front matter, core presentation metadata, sidecar image assets, external text hyperlinks, speaker notes, human-readable summary output, verbose stderr diagnostics, `--version`, and `--help`.
 
 The CLI follows the same broad argument shape as the sister `miku-docx2md` CLI for Office document to Markdown conversion. It keeps the simple `--out` and `--summary` style also used by `miku-xlsx2md`, but does not adopt workbook-specific options such as ZIP export, encoding, output modes, or table detection modes. `--help` and `--version` are metadata commands and must be used without other arguments.
 
@@ -68,6 +68,24 @@ Structured summary JSON uses schema `version: 1` and includes `metadata`, `summa
 The same structured summary shape is produced by the Node core helper
 `createPptx2MdSummaryJsonData(result)`.
 
+## Front Matter
+
+CLI Markdown starts with YAML front matter by default:
+
+```yaml
+---
+title: "sample"
+type: converted
+conversion:
+  tool: miku-pptx2md
+  version: "0.5.0"
+  notes: include
+  unsupported_comments: exclude
+---
+```
+
+Use `--front-matter exclude` to omit it.
+
 ## Speaker Notes
 
 Speaker notes are included by default when they are resolvable through slide notes relationships.
@@ -105,6 +123,7 @@ Verbose output does not mix with primary Markdown output.
 | `--summary` | Print summary to stdout |
 | `--summary-out <file>` | Write summary to a file |
 | `--summary-json-out <file>` | Write structured summary JSON to a file |
+| `--front-matter <mode>` | `include` or `exclude`. Default: `include` |
 | `--assets-dir <dir>` | Export resolved embedded image assets and `manifest.json` |
 | `--no-notes` | Omit speaker notes from Markdown output |
 | `--debug` | Include diagnostic HTML comments in Markdown |
