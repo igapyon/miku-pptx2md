@@ -64,6 +64,17 @@ test("converts the first slide into a Markdown level-2 section", () => {
   assert.equal(result.summary.errors, 0);
 });
 
+test("can include YAML front matter when requested", () => {
+  const result = convertPptxToMarkdown(createMinimalPptx(), {
+    title: "sample.pptx",
+    frontMatter: "include",
+    toolVersion: "0.5.0",
+    includeUnsupportedComments: true
+  });
+
+  assert.match(result.markdown, /^---\ntitle: "sample\.pptx"\ntype: converted\nconversion:\n  tool: miku-pptx2md\n  version: "0\.5\.0"\n  notes: include\n  unsupported_comments: include\n---\n\n# sample\.pptx\n\n## Slide 1: Overview/m);
+});
+
 test("extracts core presentation metadata and uses title as fallback heading", () => {
   const result = convertPptxToMarkdown(createMetadataPptx(), { fallbackTitle: "file-stem" });
 
@@ -245,6 +256,7 @@ test("projects structured summary JSON and asset manifest data", () => {
     "hyperlinks: 0",
     "imageAssets: 1",
     "notesSlides: 0",
+    "comments: 0",
     "warnings: 0",
     "errors: 0",
     "diagnostics: 0"
@@ -345,22 +357,22 @@ test("reports unsupported OLE picture objects as diagnostics", () => {
   assert.match(debug.markdown, /<!-- warning: unsupported-ole-object source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("reports unsupported slide comments as diagnostics", () => {
+test("renders slide comments as Markdown comments section", () => {
   const result = convertPptxToMarkdown(createCommentsPptx(), { title: "comment-sample" });
 
   assert.match(result.markdown, /^# comment-sample\n\n## Slide 1: Comment Slide/m);
   assert.match(result.markdown, /Visible slide body/);
-  assert.equal(result.summary.diagnostics, 1);
-  assert.equal(result.summary.warnings, 1);
-  assert.equal(result.diagnostics[0].code, "unsupported-comments");
-  assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
-  assert.doesNotMatch(result.markdown, /Review note/);
+  assert.match(result.markdown, /### Comments\n\n- \[comment-1\] Review note/);
+  assert.equal(result.summary.comments, 1);
+  assert.equal(result.summary.diagnostics, 0);
+  assert.equal(result.summary.warnings, 0);
+  assert.deepEqual(result.diagnostics, []);
 
   const debug = convertPptxToMarkdown(createCommentsPptx(), {
     title: "comment-sample",
     includeUnsupportedComments: true
   });
-  assert.match(debug.markdown, /<!-- warning: unsupported-comments source=ppt\/slides\/slide1\.xml:/);
+  assert.doesNotMatch(debug.markdown, /unsupported-comments/);
 });
 
 test("tracks diagnostics and can render diagnostic comments in debug mode", () => {

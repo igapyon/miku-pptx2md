@@ -137,7 +137,7 @@ Current generated fixture coverage includes:
 - merged table cell diagnostics
 - unsupported chart and SmartArt graphic-frame diagnostics
 - unsupported video picture-object diagnostics
-- unsupported slide comment diagnostics
+- slide comment text rendering
 - speaker notes
 - resolved image assets
 - missing image diagnostics
@@ -277,13 +277,13 @@ Media bytes are not exported in the current first cut.
 
 ## Current Slide Comment Diagnostics
 
-Slide relationships whose type ends with `/comments` are detected and reported as `unsupported-comments` warning diagnostics.
-Comment text and review metadata are not converted to normal Markdown in the current first cut.
+Slide relationships whose type ends with `/comments` are detected and loaded from `ppt/comments/comment*.xml`.
+Comment text is rendered under the owning slide's `### Comments` section. Review metadata is parsed only lightly and is not rendered in normal Markdown.
 
 ## Current Summary And Diagnostics
 
 The result object exposes selected core metadata, and CLI summary text includes metadata lines when present.
-The summary object and CLI summary text include counts for slides, titled slides, text blocks, list items, tables, hyperlinks, image assets, notes slides, warnings, errors, and total diagnostics.
+The summary object and CLI summary text include counts for slides, titled slides, text blocks, list items, tables, hyperlinks, image assets, notes slides, comments, warnings, errors, and total diagnostics.
 The core helper `createPptx2MdSummaryText(result)` owns this human-readable summary projection.
 
 The CLI also supports `--summary-json-out <file>` for a structured summary artifact with schema `version: 1`.
@@ -292,6 +292,8 @@ The core helper `createPptx2MdSummaryJsonData(result)` owns this structured JSON
 
 Diagnostics are structured with severity, code, message, and optional source package path.
 When `includeUnsupportedComments` or CLI `--debug` is enabled, diagnostics are appended to Markdown as HTML comments under `## Diagnostics`.
+
+CLI Markdown includes YAML front matter by default. `--front-matter exclude` omits it. Runtime callers may request the same front matter with `frontMatter: "include"`.
 
 ## Current Node Core Contract
 

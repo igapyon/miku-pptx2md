@@ -36,6 +36,8 @@ test("prints agent-readable help without requiring an input file", () => {
   assert.match(helpOutput, /--help and --version are metadata commands and must be used without other arguments\./);
   assert.match(helpOutput, /Core metadata plus text, list, table, hyperlink, image, notes, and diagnostics counts\./);
   assert.match(helpOutput, /--summary-json-out <file>/);
+  assert.match(helpOutput, /--front-matter <mode>/);
+  assert.match(helpOutput, /use --front-matter exclude to omit it/);
   assert.match(helpOutput, /Omit speaker notes from Markdown output\./);
   assert.match(helpOutput, /--include-unsupported-comments/);
   assert.match(helpOutput, /manifest\.json/);
@@ -138,7 +140,8 @@ test("writes markdown, summary, and verbose diagnostics", () => {
     assert.match(result.stderr, new RegExp(`summary-written ${escapeRegExp(summaryPath)}`));
     assert.match(result.stderr, new RegExp(`markdown-written ${escapeRegExp(outputPath)}`));
     assert.match(result.stderr, /done total-ms=/);
-    assert.match(readFileSync(outputPath, "utf8"), /## Slide 1: Overview/);
+    const markdown = readFileSync(outputPath, "utf8");
+    assert.match(markdown, /^---\ntitle: "sample"\ntype: converted\nconversion:\n  tool: miku-pptx2md\n  version: "[^"]+"\n  notes: include\n  unsupported_comments: exclude\n---\n\n# sample\n\n## Slide 1: Overview/m);
     assert.match(readFileSync(summaryPath, "utf8"), /slides: 1/);
     assert.match(readFileSync(summaryPath, "utf8"), /listItems: 0/);
     assert.match(readFileSync(summaryPath, "utf8"), /tables: 0/);
@@ -174,11 +177,70 @@ test("uses core metadata title and writes metadata summary lines", () => {
     );
 
     assert.equal(result.status, 0);
-    assert.match(readFileSync(outputPath, "utf8"), /^# Roadmap & Review\n\n## Slide 1: Metadata Slide/m);
+    assert.match(readFileSync(outputPath, "utf8"), /^---[\s\S]*?\n---\n\n# Roadmap & Review\n\n## Slide 1: Metadata Slide/m);
     const summary = readFileSync(summaryPath, "utf8");
     assert.match(summary, /metadata.title: Roadmap & Review/);
     assert.match(summary, /metadata.creator: Alice/);
     assert.match(summary, /metadata.modified: 2026-06-25T11:30:00Z/);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("omits front matter when requested", () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), "pptx2md-cli-front-matter-"));
+  try {
+    const inputPath = path.join(tempDir, "sample.pptx");
+    const outputPath = path.join(tempDir, "sample.md");
+    writeFileSync(inputPath, createMinimalPptx());
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        "scripts/miku-pptx2md-cli.mjs",
+        inputPath,
+        "--out",
+        outputPath,
+        "--front-matter",
+        "exclude"
+      ],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8"
+      }
+    );
+
+    assert.equal(result.status, 0);
+    const markdown = readFileSync(outputPath, "utf8");
+    assert.equal(markdown.startsWith("---\n"), false);
+    assert.match(markdown, /^# sample\n\n## Slide 1: Overview/m);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("fails for an invalid front matter mode", () => {
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), "pptx2md-cli-front-matter-invalid-"));
+  try {
+    const inputPath = path.join(tempDir, "sample.pptx");
+    writeFileSync(inputPath, createMinimalPptx());
+
+    const result = spawnSync(
+      process.execPath,
+      [
+        "scripts/miku-pptx2md-cli.mjs",
+        inputPath,
+        "--front-matter",
+        "invalid"
+      ],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8"
+      }
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Invalid front matter mode: invalid/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
