@@ -62,3 +62,11 @@ Reason:
 
 Impact:
 `miku-pptx2md` should keep the simple `--out` and `--summary` style that is shared across sister tools, but its primary CLI shape remains closer to `miku-docx2md`: Markdown output, optional sidecar assets, summary text, structured summary JSON, debug traces, verbose diagnostics, and metadata commands.
+
+## 2026-11-03: Do not adopt the sibling OGP deck as a pptx2md regression fixture
+
+Reason:
+The only real `.pptx` found in the local workspace is tracked by `miku-xlsx2md` at `workplace/miku-xlsx2md/docs/screenshots/xlsx2md-ogp.pptx` and serves that repository's screenshot materials. Its content and provenance have not been reviewed for this product's test needs.
+
+Impact:
+Keep `miku-pptx2md` tests self-contained with generated fixtures until a stable PowerPoint-authored sample is confirmed as suitable for local test use or redistribution. Record the sample's source and permitted use before adding it.

@@ -10,6 +10,7 @@
 - [x] Adopt `miku-ms-office-core` for low-level Office package ZIP reading
 - [x] Decide speaker notes default: include by default, with `--no-notes`
 - [x] Decide first summary shape: human-readable text, structured diagnostics internally
+- [x] Record the current first-cut scope, diagnostic limits, and fixture inventory (2026-11-03; see `docs/spec-worklog.md`)
 - [ ] Review the first specification with user feedback
 
 ## Phase 1: Project Skeleton
@@ -70,10 +71,16 @@ Update this section while working. Do not rewrite unrelated TODO items.
 - [x] Add CLI bundle generation and `smoke:bundle` so release assets include CLI, runtime, and source artifacts.
 - [x] Replace tag-push-only release asset workflow with GitHub Release published workflow for CLI/runtime bundles.
 
+### Scope review follow-ups
+
+- [ ] Enrich diagnostic source traces with slide index and shape or relationship identity when available; treat any JSON contract change explicitly.
+- [ ] Define and implement chart cached-data extraction as a separate feature with representative fixtures.
+- [ ] Define and implement SmartArt text extraction with stable ordering as a separate feature with representative fixtures.
+
 ### Blockers
 
-- Specification review requires user feedback on the first specification.
-- PowerPoint-authored real fixtures require stable sample `.pptx` files that are acceptable for local test use or redistribution.
+- Product-owner feedback on the first specification is still pending; the current review findings and open decisions are recorded in `docs/spec-worklog.md`.
+- PowerPoint-authored real fixtures require a stable `.pptx` sample whose contents and provenance permit local test use or redistribution. The tracked `miku-xlsx2md` OGP screenshot source is not adopted as a fixture for this repository.
 
 ### Retry Log
 

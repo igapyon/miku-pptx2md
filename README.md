@@ -8,7 +8,7 @@ This repository will own the product core, Node.js CLI, conversion semantics, di
 
 `miku-pptx2md` reads `.pptx` files locally and currently extracts core presentation metadata, ordered slide sections, title placeholders, text bodies, text-bearing shapes, lists, simple tables, external text hyperlinks, speaker notes, and resolved image references into Markdown-oriented artifacts.
 
-The planned scope also includes richer structured diagnostics and additional object-specific extraction.
+Current structured diagnostics report unsupported or incomplete extraction at the package-part level where available. Future work is limited to richer slide, object, and relationship traces plus separately scoped extraction for chart data and SmartArt text. Layout reconstruction, geometry-dependent diagrams, animations, and OLE, audio, or video conversion remain outside the initial scope; recognized unsupported objects are reported through diagnostics.
 
 The conversion goal is meaningful Markdown extraction, not exact visual reproduction of PowerPoint slides.
 
@@ -107,7 +107,7 @@ npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.5.1`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.8.0`.
 
 When a GitHub Release for a `v*` tag is published, the release asset workflow builds and smokes the CLI and runtime bundles, creates a source archive, and uploads:
 
