@@ -23,7 +23,11 @@ test("prints agent-readable help without requiring an input file", () => {
     }
   );
 
-  assert.match(helpOutput, /miku-pptx2md - local-first PPTX to Markdown converter/);
+  assert.match(helpOutput, /miku-pptx2md - lightweight local PPTX intake for AI agents/);
+  assert.match(helpOutput, /node scripts\/miku-pptx2md-cli\.mjs <input\.pptx> \[options\]/);
+  assert.match(helpOutput, /Conversion uses no LLM or AI API and consumes no inference tokens\./);
+  assert.match(helpOutput, /Later AI analysis of the Markdown consumes tokens separately\./);
+  assert.match(helpOutput, /Show only the package version number, then exit\./);
   assert.match(helpOutput, /USAGE/);
   assert.match(helpOutput, /CONTRACT/);
   assert.match(helpOutput, /OPTIONS/);
@@ -46,7 +50,7 @@ test("prints agent-readable help without requiring an input file", () => {
   assert.match(helpOutput, /slide index, block index, relationship id, and document position\./);
 });
 
-test("prints package version with product name", () => {
+test("prints only the package version", () => {
   const packageJson = JSON.parse(readFileSync(path.join(REPO_ROOT, "package.json"), "utf8"));
   const versionOutput = execFileSync(
     process.execPath,
@@ -60,7 +64,7 @@ test("prints package version with product name", () => {
     }
   );
 
-  assert.equal(versionOutput, `miku-pptx2md ${packageJson.version}\n`);
+  assert.equal(versionOutput, `${packageJson.version}\n`);
 });
 
 test("rejects metadata commands mixed with other arguments", () => {

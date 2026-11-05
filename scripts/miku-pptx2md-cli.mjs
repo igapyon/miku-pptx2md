@@ -62,12 +62,26 @@ const VALUE_OPTIONS = {
 };
 
 function printHelp() {
-  console.log(`miku-pptx2md - local-first PPTX to Markdown converter
+  const scriptPath = toPosixPath(path.relative(process.cwd(), process.argv[1]));
+  const scriptArgument = /^[A-Za-z0-9_./:-]+$/.test(scriptPath)
+    ? scriptPath
+    : process.platform === "win32"
+      ? JSON.stringify(scriptPath)
+      : "'" + scriptPath.replaceAll("'", "'\\''") + "'";
+  const command = "node " + scriptArgument;
+  console.log(`miku-pptx2md - lightweight local PPTX intake for AI agents
 
 USAGE
-  node scripts/miku-pptx2md-cli.mjs <input.pptx> [options]
-  node scripts/miku-pptx2md-cli.mjs --version
-  node scripts/miku-pptx2md-cli.mjs --help
+  ${command} <input.pptx> [options]
+  ${command} --version
+  ${command} --help
+
+DESCRIPTION
+  Lightweight, local, deterministic PPTX-to-Markdown preprocessing for AI agents.
+  Conversion uses no LLM or AI API and consumes no inference tokens.
+  Later AI analysis of the Markdown consumes tokens separately.
+  Text-focused output supports search, summaries, and initial review.
+  Layout, styling, and visual object meaning have limited preservation.
 
 CONTRACT
   Input is exactly one local .pptx file path.
@@ -117,7 +131,7 @@ OPTIONS
       Primary Markdown and summary outputs are unchanged.
 
   --version
-      Show product name and package version, then exit.
+      Show only the package version number, then exit.
 
   --help
       Show this help, then exit.
@@ -141,34 +155,34 @@ OUTPUTS
 
 EXAMPLES
   Write Markdown to a file:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md
+    ${command} ./sample.pptx --out ./sample.md
 
   Print Markdown to stdout:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx
+    ${command} ./sample.pptx
 
   Write Markdown and summary files:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --summary-out ./sample.summary.txt
+    ${command} ./sample.pptx --out ./sample.md --summary-out ./sample.summary.txt
 
   Write structured summary JSON:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --summary-json-out ./sample.summary.json
+    ${command} ./sample.pptx --out ./sample.md --summary-json-out ./sample.summary.json
 
   Omit YAML front matter:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --front-matter exclude
+    ${command} ./sample.pptx --out ./sample.md --front-matter exclude
 
   Print a summary:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --summary
+    ${command} ./sample.pptx --out ./sample.md --summary
 
   Write Markdown and export image assets:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --assets-dir ./sample.assets
+    ${command} ./sample.pptx --out ./sample.md --assets-dir ./sample.assets
 
   Include diagnostic debug comments:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --debug
+    ${command} ./sample.pptx --out ./sample.md --debug
 
   Show progress diagnostics on stderr:
-    node scripts/miku-pptx2md-cli.mjs ./sample.pptx --out ./sample.md --verbose
+    ${command} ./sample.pptx --out ./sample.md --verbose
 
   Show version:
-    node scripts/miku-pptx2md-cli.mjs --version
+    ${command} --version
 
 EXIT CODES
   0  Success, or explicit metadata command such as --version / --help.
@@ -368,7 +382,7 @@ async function main() {
 
   if (options.version) {
     const version = await readPackageVersion();
-    console.log(`miku-pptx2md ${version}`);
+    console.log(version);
     process.exit(0);
   }
 
