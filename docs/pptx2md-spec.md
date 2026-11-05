@@ -69,6 +69,20 @@ The first cut intentionally excludes visual and layout-heavy reproduction.
 
 Visual features may be diagnosed and counted without being converted into normal Markdown.
 
+### 2.5 Scope Review And Follow-up Work
+
+The 2026-11-04 review keeps the implemented first-cut extraction boundary. Structured diagnostics already expose severity, code, message, and an optional package-part source path. More detailed traces and additional extraction are future work:
+
+| Work unit | Target and acceptance boundary |
+| --- | --- |
+| Diagnostic source traces | Add slide index and shape / relationship identity where available; decide JSON compatibility and stable ordering before extending the public contract. |
+| Chart cached-data extraction | Read series, category labels, and cached values from chart parts. Report missing caches explicitly; no chart rendering or embedded-workbook recalculation. |
+| SmartArt text extraction | Read diagram text and define stable node ordering with fixtures. Report unresolved relationships; no inferred connector or geometric meaning. |
+
+These are separate candidates, not current functionality. Prioritization and the diagnostic schema migration remain open product decisions. Review findings and the real-fixture inventory are recorded in [the worklog](spec-worklog.md).
+
+The real PowerPoint candidate reviewed for Issue #13 contains image-based OGP slides without DrawingML slide text. It is deferred because it does not exercise the intended semantic text extraction. Generated fixtures remain the baseline while a stable, permitted sample with title/body text, lists, a simple table, notes, and an embedded image is sought. Recording this reason and the required sample conditions is the fixture outcome for this review.
+
 ## 3. Target Presentations
 
 `pptx2md` primarily targets presentation-style inputs whose main value is in written slide content and speaker notes.
@@ -555,7 +569,7 @@ Current options:
 - `--debug`: include unsupported trace comments in Markdown
 - `--include-unsupported-comments`: alias for `--debug`
 - `--verbose`: write progress and timing diagnostics to stderr
-- `--version`: print version
+- `--version`: print only the version number from package metadata
 - `--help`: print help
 
 Exit codes:

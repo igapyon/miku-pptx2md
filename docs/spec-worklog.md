@@ -106,3 +106,38 @@ Reference revision note:
 - Checked date: 2026-11-03
 - Main workflow: `references/maintenance-workflow.md` and the Node.js main-application design.
 - The installed skill directory was not a Git worktree, so no skill commit hash was available.
+
+## 2026-11-04 Remaining Issue Implementation And Review Results
+
+The maintainer requested progress on the remaining Issues and clarified that Node updates flow into Java maintenance. The implementation keeps Node as the semantic source and records the Java comparison rather than claiming new cross-runtime output parity.
+
+| Issue | Result and evidence |
+| --- | --- |
+| #10 | Version output is numeric only in source and bundle CLIs. Updated help now states that contract as well. |
+| #11 | Help derives its invocation from the running script path. Isolated bundle smoke uses versioned, suffix-versioned, and space / quote-containing filenames, then runs the displayed help, version, and normal conversion examples without a source checkout. |
+| #12 | README, usage, and CLI describe lightweight local deterministic intake, no LLM/API use during conversion, separate downstream token consumption, and text / visual limits. `docs/product-positioning.md` contains shared vocabulary, a comparison against the recorded Java README snapshot, and the About review and proposed text. |
+| #13 | README and specification distinguish current extraction from bounded future work. The technical review and unresolved future decisions are recorded. Real-fixture deferral is now based on inspected content and concrete sample requirements. |
+
+### Real Fixture Decision
+
+Candidate: `workplace/miku-xlsx2md/docs/screenshots/xlsx2md-ogp.pptx`, last changed in sibling commit `5b0e005a2a2c4cd34fa8a9740dd6099d08206042`.
+
+- Size: 110187 bytes.
+- SHA-256: `a18dd3856824ce25be1b846884a504950bbd47596547a1a3f8df2245cfc62623`.
+- Package properties identify `Microsoft Macintosh PowerPoint`, creator Toshiki Iga, and two slides.
+- Both slide XML parts contain no DrawingML text. The package contains SVG / PNG artwork.
+- Decision: defer this candidate because it does not exercise semantic text extraction. No candidate bytes are imported into the fixture set.
+- Required replacement: stable non-sensitive content whose provenance and permitted test use are known, with title/body text, lists, a simple table, notes, and an embedded image. Unsupported visual objects can be added as a separate diagnostic fixture.
+
+Issue #13 explicitly allows recording a reason and required conditions instead of adding a real fixture. That alternative is complete. Real-world fixture coverage and product-owner prioritization of additional extraction remain future quality / product work; they do not prevent recording this initial technical review as completed. No new product-owner feedback is invented or marked received.
+
+### Verification And References
+
+- `npm run test:unit`: all 31 tests passed, including the numeric version contract and current conversion regressions.
+- `npm run smoke:bundle`: passed literal help / version / conversion examples for all three renamed standalone CLI files.
+- `npm run smoke:runtime`: passed conversion and artifact projection checks.
+- Shared reference checked: installed `igapyon-miku-soft-developer`, `references/maintenance-workflow.md`, `references/10-node-app-workflow.md`, main application / CLI design, and repository conventions. The installed skill is not a Git worktree; no reference commit is available.
+- Maintenance adoption: applied adjacent documentation / CLI contract corrections. Changes to Node compatibility floors, CI platforms, or release naming require their own compatibility review and are deferred from this issue slice.
+- Java comparison: local README at `2f1c13fc12270dda0f804e0be75283f8be7eaee2`; scope and limits are recorded in `docs/product-positioning.md`.
+
+These records describe local implementation readiness. GitHub Issue state and the hosted About description are separate publishing actions.

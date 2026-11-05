@@ -147,6 +147,10 @@ Current generated fixture coverage includes:
 
 PowerPoint-authored real-world fixtures are intentionally separate and should be added only when stable sample documents are available for redistribution or local test use.
 
+On 2026-11-04, the sibling `miku-xlsx2md` OGP source was confirmed as Microsoft Macintosh PowerPoint output. Both slides lack DrawingML text and primarily use image assets, so that sample is deferred as unrepresentative of text extraction. A useful real fixture should include title/body text, lists, a basic table, notes, and an image with known provenance and permitted test use. See [the scope review](spec-worklog.md).
+
+The CLI bundle smoke copies the built module under versioned, suffix-versioned, and quoted filenames into an isolated directory. It executes the displayed help, version, and ordinary conversion commands there against a generated PPTX, checking that the release help needs no source checkout.
+
 ## Current Core Metadata Extraction
 
 When `docProps/core.xml` is present, selected core properties are exposed through `result.metadata`.

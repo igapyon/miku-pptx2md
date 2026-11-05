@@ -70,3 +70,11 @@ The only real `.pptx` found in the local workspace is tracked by `miku-xlsx2md` 
 
 Impact:
 Keep `miku-pptx2md` tests self-contained with generated fixtures until a stable PowerPoint-authored sample is confirmed as suitable for local test use or redistribution. Record the sample's source and permitted use before adding it.
+
+## 2026-11-04: Defer the reviewed OGP deck because its slides contain no text
+
+Reason:
+Inspection of the candidate's package properties confirms `Microsoft Macintosh PowerPoint`, two slides, and Toshiki Iga as creator. Both slide parts contain no DrawingML text; the deck uses SVG / PNG artwork. It is a genuine application-authored PPTX but does not cover the product's text extraction targets.
+
+Impact:
+Do not import this candidate merely to add a real-file checkbox. The Issue #13 fixture outcome is the recorded deferral and concrete sample requirements. Keep a representative real fixture as future quality work. Product-owner prioritization of future chart, SmartArt, or diagnostic extensions can proceed separately from the completed initial-scope review.

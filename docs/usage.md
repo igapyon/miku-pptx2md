@@ -12,11 +12,25 @@ The CLI follows the same broad argument shape as the sister `miku-docx2md` CLI f
 
 Some advanced conversion areas, such as richer object-specific diagnostics and additional object-specific extraction, remain planned.
 
+Normal conversion is lightweight local preprocessing for AI agents. It uses no LLM or AI API and consumes no inference tokens; agent orchestration and later AI analysis can consume tokens separately. Markdown is a text-focused intermediate representation whose visual preservation is limited. See [product positioning](product-positioning.md) for shared vocabulary and Java comparison boundaries.
+
 ## Convert A Presentation
 
 ```bash
 npm run cli -- ./sample.pptx --out ./sample.md
 ```
+
+## Standalone Release CLI
+
+Place the release module and your presentation in the working directory, then run:
+
+```bash
+node miku-pptx2md-0.8.1.mjs --help
+node miku-pptx2md-0.8.1.mjs --version
+node miku-pptx2md-0.8.1.mjs ./sample.pptx --out ./sample.md
+```
+
+Use the filename of the downloaded module. Help derives every usage and conversion example from the running script path, including renamed files or release suffixes such as `miku-pptx2md-0.8.1.2.mjs`. The source CLI similarly shows its path relative to the working directory. Paths with spaces are quoted for the current platform.
 
 ## Export Image Assets
 
@@ -78,7 +92,7 @@ title: "sample"
 type: converted
 conversion:
   tool: miku-pptx2md
-  version: "0.8.0"
+  version: "0.8.1"
   notes: include
   unsupported_comments: exclude
 ---
@@ -129,7 +143,7 @@ Verbose output does not mix with primary Markdown output.
 | `--debug` | Include diagnostic HTML comments in Markdown |
 | `--include-unsupported-comments` | Alias for `--debug` |
 | `--verbose` | Print progress and timing diagnostics to stderr |
-| `--version` | Print version |
+| `--version` | Print only the version number from package metadata |
 | `--help` | Print help |
 
 ## Exit Codes

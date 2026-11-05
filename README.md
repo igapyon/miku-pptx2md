@@ -1,16 +1,22 @@
 # miku-pptx2md
 
-`miku-pptx2md` is a TypeScript / Node.js main application for converting PowerPoint (`.pptx`) presentations into Markdown-oriented artifacts.
+`miku-pptx2md` is a lightweight, local PowerPoint (`.pptx`) intake tool for AI agents. It produces text-focused Markdown intermediate artifacts for search, summaries, and initial content review.
 
-This repository will own the product core, Node.js CLI, conversion semantics, diagnostics, fixtures, and tests. A browser Web App surface, if created later, should live in a separated `miku-pptx2md-web` repository.
+Conversion uses local ZIP/XML processing without an LLM or AI API, so the conversion itself consumes no inference tokens. An agent orchestrating the CLI or analyzing the resulting Markdown can consume tokens separately. With the same input, runtime, version, and options, conversion is deterministic and does not depend on model-generated results.
+
+The output is an intermediate representation for understanding and handing off content. Layout, styling, images, shapes, and charts have limited preservation; consult the original presentation for visual details. The tool is AI-oriented, not AI-dependent, and is not layout-faithful.
+
+This TypeScript / Node.js repository owns the product core, CLI, conversion semantics, diagnostics, fixtures, and tests. A browser Web App surface, if created later, should live in a separated `miku-pptx2md-web` repository.
 
 ## What is this?
 
 `miku-pptx2md` reads `.pptx` files locally and currently extracts core presentation metadata, ordered slide sections, title placeholders, text bodies, text-bearing shapes, lists, simple tables, external text hyperlinks, speaker notes, and resolved image references into Markdown-oriented artifacts.
 
-Current structured diagnostics report unsupported or incomplete extraction at the package-part level where available. Future work is limited to richer slide, object, and relationship traces plus separately scoped extraction for chart data and SmartArt text. Layout reconstruction, geometry-dependent diagrams, animations, and OLE, audio, or video conversion remain outside the initial scope; recognized unsupported objects are reported through diagnostics.
+Current structured diagnostics report unsupported or incomplete extraction at the package-part level where available. Planned extensions include richer slide, object, and relationship traces plus separately scoped extraction for chart data and SmartArt text. Layout reconstruction, geometry-dependent diagrams, animations, and OLE, audio, or video conversion remain outside the initial scope; recognized unsupported objects are reported through diagnostics.
 
 The conversion goal is meaningful Markdown extraction, not exact visual reproduction of PowerPoint slides.
+
+The [Java companion](https://github.com/igapyon/miku-pptx2md-java) shares this local, text-focused intake purpose and follows Node as its semantic source. Output equivalence depends on the compared versions and fixtures; exact Node / Java output parity is not guaranteed without verification. See the [product message and Java comparison](docs/product-positioning.md).
 
 ## Sister References
 
@@ -94,6 +100,7 @@ Node, Agent Skill, MCP, and future separated Web adapter workflows.
 - Known unsupported PowerPoint features: [docs/unsupported-features.md](./docs/unsupported-features.md)
 - miku-soft shared reference entry point: [docs/miku-soft-reference.md](./docs/miku-soft-reference.md)
 - Specification worklog: [docs/spec-worklog.md](./docs/spec-worklog.md)
+- Product vocabulary, Java comparison, and proposed GitHub About: [docs/product-positioning.md](./docs/product-positioning.md)
 
 ## Build And Test
 
@@ -107,7 +114,7 @@ npm run build:runtime
 npm run smoke:runtime
 ```
 
-GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.8.0`.
+GitHub Actions runs the same build and unit-test baseline for branch pushes, pull requests, and `v*` version tags such as `v0.8.1`.
 
 When a GitHub Release for a `v*` tag is published, the release asset workflow builds and smokes the CLI and runtime bundles, creates a source archive, and uploads:
 

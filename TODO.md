@@ -11,7 +11,7 @@
 - [x] Decide speaker notes default: include by default, with `--no-notes`
 - [x] Decide first summary shape: human-readable text, structured diagnostics internally
 - [x] Record the current first-cut scope, diagnostic limits, and fixture inventory (2026-11-03; see `docs/spec-worklog.md`)
-- [ ] Review the first specification with user feedback
+- [x] Review the first specification and record findings, decisions, and open questions (#13; 2026-11-04)
 
 ## Phase 1: Project Skeleton
 
@@ -71,16 +71,23 @@ Update this section while working. Do not rewrite unrelated TODO items.
 - [x] Add CLI bundle generation and `smoke:bundle` so release assets include CLI, runtime, and source artifacts.
 - [x] Replace tag-push-only release asset workflow with GitHub Release published workflow for CLI/runtime bundles.
 
+### Issue work — 2026-11-04
+
+- [x] #10: Print only the package version from source and bundled CLIs; align help, tests, and usage docs.
+- [x] #11: Derive all help examples from the actual runtime filename and execute the printed examples from an isolated release directory.
+- [x] #12: Align README and CLI product messages, document the token boundary, compare the Java README, and assess GitHub About update needs in `docs/product-positioning.md`.
+- [x] #13: Complete the initial-scope review, define bounded diagnostic / chart / SmartArt follow-ups, and record the real-fixture deferral with sample requirements.
+
 ### Scope review follow-ups
 
 - [ ] Enrich diagnostic source traces with slide index and shape or relationship identity when available; treat any JSON contract change explicitly.
 - [ ] Define and implement chart cached-data extraction as a separate feature with representative fixtures.
 - [ ] Define and implement SmartArt text extraction with stable ordering as a separate feature with representative fixtures.
 
-### Blockers
+### Deferred quality work and open product decisions
 
-- Product-owner feedback on the first specification is still pending; the current review findings and open decisions are recorded in `docs/spec-worklog.md`.
-- PowerPoint-authored real fixtures require a stable `.pptx` sample whose contents and provenance permit local test use or redistribution. The tracked `miku-xlsx2md` OGP screenshot source is not adopted as a fixture for this repository.
+- Product-owner prioritization of additional chart, SmartArt, and diagnostic work remains open. The technical initial-scope review is complete; new feature priorities are separate follow-up decisions.
+- A representative PowerPoint-authored fixture still requires a stable, permitted sample with title/body text, lists, a simple table, notes, and an embedded image. The reviewed `miku-xlsx2md` OGP deck was created in PowerPoint but has no DrawingML text in either slide, so it is deferred as unrepresentative of text extraction. The reason and requirements satisfy #13's documented-deferral alternative.
 
 ### Retry Log
 
