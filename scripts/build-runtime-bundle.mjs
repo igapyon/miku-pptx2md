@@ -47,7 +47,7 @@ const { readOfficePackage } = __mikuMsOfficeCore;
 
 async function createRuntimeSource() {
   const packageJson = JSON.parse(await readText("package.json"));
-  const msOfficeCoreSource = stripVendorExports(await readText("dist/vendor/miku-ms-office-core-0.5.1.mjs"));
+  const msOfficeCoreSource = stripVendorExports(await readText("dist/vendor/miku-ms-office-core-0.8.0.mjs"));
   const artifactsSource = stripEsmBoundary(await readText("dist/js/artifacts.js"));
   const xmlUtilsSource = stripEsmBoundary(await readText("dist/js/xml-utils.js"));
   const zipIoSource = stripEsmBoundary(await readText("dist/js/zip-io.js"));

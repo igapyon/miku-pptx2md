@@ -1,6 +1,6 @@
 {
   "name": "miku-pptx2md",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,10 +18,16 @@
     "build:bundle": "node scripts/build-runtime-bundle.mjs",
     "presmoke:bundle": "npm run build:bundle",
     "smoke:bundle": "node scripts/smoke-cli-bundle.mjs",
-    "smoke:runtime": "node scripts/smoke-runtime-bundle.mjs"
+    "smoke:runtime": "node scripts/smoke-runtime-bundle.mjs",
+    "test:browser": "npm run build:runtime && playwright test"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@playwright/test": "1.64.1",
+    "esbuild": "^0.28.1"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -10,8 +10,9 @@ const SOURCE_FILES = [
   "src/ts/core.ts"
 ];
 const VENDOR_FILES = [
-  "src/vendor/miku-ms-office-core-0.5.1.mjs",
-  "src/vendor/miku-ms-office-core-0.5.1.mjs.map"
+  "src/vendor/miku-ms-office-core-0.8.0.mjs",
+  "src/vendor/miku-ms-office-core-0.8.0.mjs.map",
+  "src/vendor/miku-ms-office-core-0.8.0.d.mts"
 ];
 
 const tsModule = await loadTypeScriptModule();

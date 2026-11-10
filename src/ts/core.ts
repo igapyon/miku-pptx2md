@@ -2,6 +2,8 @@ import { collectTagBlocks, collectTextValues, decodeXmlEntities, getAttribute, n
 import { readZipEntries } from "./zip-io.js";
 import type { Pptx2MdAsset, Pptx2MdDiagnostic, Pptx2MdMetadata, Pptx2MdResult, Pptx2MdSummary } from "./artifacts.js";
 
+const textDecoder = new TextDecoder("utf-8");
+
 export interface Pptx2MdOptions {
   title?: string;
   fallbackTitle?: string;
@@ -61,8 +63,8 @@ interface SlideComment {
   date?: string;
 }
 
-export function convertPptxToMarkdown(bytes: Uint8Array, options: Pptx2MdOptions = {}): Pptx2MdResult {
-  const entries = readZipEntries(bytes);
+export async function convertPptxToMarkdown(bytes: Uint8Array, options: Pptx2MdOptions = {}): Promise<Pptx2MdResult> {
+  const entries = await readZipEntries(bytes);
   const diagnostics: Pptx2MdDiagnostic[] = [];
   const metadata = parseCoreProperties(entries);
   const contentTypes = parseContentTypes(entries);
@@ -1001,5 +1003,5 @@ function escapeMarkdownLinkDestination(text: string): string {
 
 function readTextEntry(entries: Map<string, Uint8Array>, path: string): string | undefined {
   const data = entries.get(path);
-  return data ? Buffer.from(data).toString("utf8") : undefined;
+  return data ? textDecoder.decode(data) : undefined;
 }

@@ -1,12 +1,12 @@
-import { readOfficePackage } from "../vendor/miku-ms-office-core-0.5.1.mjs";
+import { readOfficePackage } from "../vendor/miku-ms-office-core-0.8.0.mjs";
 
 export interface ZipEntry {
   path: string;
   data: Uint8Array;
 }
 
-export function readZipEntries(bytes: Uint8Array): Map<string, Uint8Array> {
-  const officePackage = readOfficePackage(bytes);
+export async function readZipEntries(bytes: Uint8Array): Promise<Map<string, Uint8Array>> {
+  const officePackage = await readOfficePackage(bytes);
   const errors = officePackage.diagnostics.filter((diagnostic) => diagnostic.severity === "error");
   if (errors.length > 0) {
     throw new Error(errors.map(formatOfficeDiagnostic).join("\n"));

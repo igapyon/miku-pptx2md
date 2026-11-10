@@ -319,10 +319,10 @@ function createImagePathResolver(resolvedAssetsDir, resolvedOutputPath) {
   };
 }
 
-function convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion) {
+async function convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion) {
   try {
     const inputStem = path.basename(options.inputPath).replace(/\.[^.]+$/, "");
-    return convertPptxToMarkdown(inputBytes, {
+    return await convertPptxToMarkdown(inputBytes, {
       fallbackTitle: inputStem,
       frontMatter: options.frontMatter,
       toolVersion: packageVersion,
@@ -406,7 +406,7 @@ async function main() {
     const inputBytes = await readInputBytes(inputPath);
     verbose(`input-bytes=${inputBytes.byteLength}`);
 
-    const result = convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion);
+    const result = await convertInputPresentation(inputBytes, options, resolvedAssetsDir, resolvedOutputPath, inputPath, packageVersion);
     verbose(`converted slides=${result.summary.slides} textBlocks=${result.summary.textBlocks} imageAssets=${result.summary.imageAssets}`);
 
     await writeAssets(result, resolvedAssetsDir, inputPath);
