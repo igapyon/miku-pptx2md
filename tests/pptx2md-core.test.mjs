@@ -28,7 +28,7 @@ import {
   createVideoPptx
 } from "./pptx-fixture.mjs";
 
-test("validates safe PPTX package asset path parts", () => {
+test("validates safe PPTX package asset path parts", async () => {
   assert.deepEqual(getSafePptxPackagePathParts("ppt/media/image1.png"), ["ppt", "media", "image1.png"]);
 
   for (const unsafePath of [
@@ -46,8 +46,8 @@ test("validates safe PPTX package asset path parts", () => {
   }
 });
 
-test("converts the first slide into a Markdown level-2 section", () => {
-  const result = convertPptxToMarkdown(createMinimalPptx(), { title: "sample" });
+test("converts the first slide into a Markdown level-2 section", async () => {
+  const result = await convertPptxToMarkdown(createMinimalPptx(), { title: "sample" });
 
   assert.match(result.markdown, /^# sample\n\n## Slide 1: Overview/m);
   assert.match(result.markdown, /First paragraph/);
@@ -64,8 +64,8 @@ test("converts the first slide into a Markdown level-2 section", () => {
   assert.equal(result.summary.errors, 0);
 });
 
-test("can include YAML front matter when requested", () => {
-  const result = convertPptxToMarkdown(createMinimalPptx(), {
+test("can include YAML front matter when requested", async () => {
+  const result = await convertPptxToMarkdown(createMinimalPptx(), {
     title: "sample.pptx",
     frontMatter: "include",
     toolVersion: "0.8.1",
@@ -75,8 +75,8 @@ test("can include YAML front matter when requested", () => {
   assert.match(result.markdown, /^---\ntitle: "sample\.pptx"\ntype: converted\nconversion:\n  tool: miku-pptx2md\n  version: "0\.8\.1"\n  notes: include\n  unsupported_comments: include\n---\n\n# sample\.pptx\n\n## Slide 1: Overview/m);
 });
 
-test("extracts core presentation metadata and uses title as fallback heading", () => {
-  const result = convertPptxToMarkdown(createMetadataPptx(), { fallbackTitle: "file-stem" });
+test("extracts core presentation metadata and uses title as fallback heading", async () => {
+  const result = await convertPptxToMarkdown(createMetadataPptx(), { fallbackTitle: "file-stem" });
 
   assert.match(result.markdown, /^# Roadmap & Review\n\n## Slide 1: Metadata Slide/m);
   assert.equal(result.metadata.title, "Roadmap & Review");
@@ -90,12 +90,12 @@ test("extracts core presentation metadata and uses title as fallback heading", (
   assert.equal(result.metadata.created, "2026-06-24T10:00:00Z");
   assert.equal(result.metadata.modified, "2026-06-25T11:30:00Z");
 
-  const overridden = convertPptxToMarkdown(createMetadataPptx(), { title: "explicit-title" });
+  const overridden = await convertPptxToMarkdown(createMetadataPptx(), { title: "explicit-title" });
   assert.match(overridden.markdown, /^# explicit-title\n\n## Slide 1: Metadata Slide/m);
 });
 
-test("marks text inside ordinary shapes while preserving textbox text as plain paragraphs", () => {
-  const result = convertPptxToMarkdown(createShapeTextPptx(), { title: "shape-sample" });
+test("marks text inside ordinary shapes while preserving textbox text as plain paragraphs", async () => {
+  const result = await convertPptxToMarkdown(createShapeTextPptx(), { title: "shape-sample" });
 
   assert.match(result.markdown, /^# shape-sample\n\n## Slide 1: Shape Slide/m);
   assert.match(result.markdown, /> \[Shape: rect\] Decision box/);
@@ -105,8 +105,8 @@ test("marks text inside ordinary shapes while preserving textbox text as plain p
   assert.equal(result.summary.textBlocks, 3);
 });
 
-test("converts clear bullet and numbered paragraphs to Markdown lists", () => {
-  const result = convertPptxToMarkdown(createListPptx(), { title: "list-sample" });
+test("converts clear bullet and numbered paragraphs to Markdown lists", async () => {
+  const result = await convertPptxToMarkdown(createListPptx(), { title: "list-sample" });
 
   assert.match(result.markdown, /^# list-sample\n\n## Slide 1: List Slide/m);
   assert.match(result.markdown, /\n- Bullet item\n/);
@@ -117,8 +117,8 @@ test("converts clear bullet and numbered paragraphs to Markdown lists", () => {
   assert.equal(result.summary.listItems, 3);
 });
 
-test("preserves simple bold, italic, and underline text runs as Markdown formatting", () => {
-  const result = convertPptxToMarkdown(createFormattedTextPptx(), { title: "format-sample" });
+test("preserves simple bold, italic, and underline text runs as Markdown formatting", async () => {
+  const result = await convertPptxToMarkdown(createFormattedTextPptx(), { title: "format-sample" });
 
   assert.match(result.markdown, /^# format-sample\n\n## Slide 1: Formatted Slide/m);
   assert.match(result.markdown, /Use \*\*bold\*\* and \*italic\* plus \*\*\*both\*\*\* and <u>underlined<\/u>/);
@@ -126,8 +126,8 @@ test("preserves simple bold, italic, and underline text runs as Markdown formatt
   assert.equal(result.summary.warnings, 0);
 });
 
-test("converts slide text hyperlinks to Markdown links", () => {
-  const result = convertPptxToMarkdown(createHyperlinkPptx(), { title: "link-sample" });
+test("converts slide text hyperlinks to Markdown links", async () => {
+  const result = await convertPptxToMarkdown(createHyperlinkPptx(), { title: "link-sample" });
 
   assert.match(result.markdown, /^# link-sample\n\n## Slide 1: Hyperlink Slide/m);
   assert.match(result.markdown, /See \[\*\*project site\*\*\]\(https:\/\/example\.com\/project\?from=pptx\) for details/);
@@ -136,8 +136,8 @@ test("converts slide text hyperlinks to Markdown links", () => {
   assert.equal(result.summary.warnings, 0);
 });
 
-test("converts simple PowerPoint tables to Markdown tables", () => {
-  const result = convertPptxToMarkdown(createTablePptx(), { title: "table-sample" });
+test("converts simple PowerPoint tables to Markdown tables", async () => {
+  const result = await convertPptxToMarkdown(createTablePptx(), { title: "table-sample" });
 
   assert.match(result.markdown, /^# table-sample\n\n## Slide 1: Table Slide/m);
   assert.match(result.markdown, /\| Name \| Status \|/);
@@ -148,8 +148,8 @@ test("converts simple PowerPoint tables to Markdown tables", () => {
   assert.equal(result.summary.tables, 1);
 });
 
-test("warns when converting merged PowerPoint tables as flattened Markdown", () => {
-  const result = convertPptxToMarkdown(createMergedTablePptx(), { title: "merged-table-sample" });
+test("warns when converting merged PowerPoint tables as flattened Markdown", async () => {
+  const result = await convertPptxToMarkdown(createMergedTablePptx(), { title: "merged-table-sample" });
 
   assert.match(result.markdown, /^# merged-table-sample\n\n## Slide 1: Merged Table Slide/m);
   assert.match(result.markdown, /\| Combined Header \|  \|/);
@@ -160,15 +160,15 @@ test("warns when converting merged PowerPoint tables as flattened Markdown", () 
   assert.equal(result.diagnostics[0].code, "limited-table-merged-cells");
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
 
-  const debug = convertPptxToMarkdown(createMergedTablePptx(), {
+  const debug = await convertPptxToMarkdown(createMergedTablePptx(), {
     title: "merged-table-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: limited-table-merged-cells source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("reports unsupported chart graphic frames as diagnostics", () => {
-  const result = convertPptxToMarkdown(createChartPptx(), { title: "chart-sample" });
+test("reports unsupported chart graphic frames as diagnostics", async () => {
+  const result = await convertPptxToMarkdown(createChartPptx(), { title: "chart-sample" });
 
   assert.match(result.markdown, /^# chart-sample\n\n## Slide 1: Chart Slide/m);
   assert.equal(result.summary.diagnostics, 1);
@@ -177,15 +177,15 @@ test("reports unsupported chart graphic frames as diagnostics", () => {
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
   assert.doesNotMatch(result.markdown, /unsupported-chart/);
 
-  const debug = convertPptxToMarkdown(createChartPptx(), {
+  const debug = await convertPptxToMarkdown(createChartPptx(), {
     title: "chart-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: unsupported-chart source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("reports unsupported SmartArt graphic frames as diagnostics", () => {
-  const result = convertPptxToMarkdown(createSmartArtPptx(), { title: "smartart-sample" });
+test("reports unsupported SmartArt graphic frames as diagnostics", async () => {
+  const result = await convertPptxToMarkdown(createSmartArtPptx(), { title: "smartart-sample" });
 
   assert.match(result.markdown, /^# smartart-sample\n\n## Slide 1: SmartArt Slide/m);
   assert.equal(result.summary.diagnostics, 1);
@@ -194,15 +194,15 @@ test("reports unsupported SmartArt graphic frames as diagnostics", () => {
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
   assert.doesNotMatch(result.markdown, /unsupported-smartart/);
 
-  const debug = convertPptxToMarkdown(createSmartArtPptx(), {
+  const debug = await convertPptxToMarkdown(createSmartArtPptx(), {
     title: "smartart-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: unsupported-smartart source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("emits speaker notes by default and honors includeNotes false", () => {
-  const result = convertPptxToMarkdown(createNotesPptx(), { title: "notes-sample" });
+test("emits speaker notes by default and honors includeNotes false", async () => {
+  const result = await convertPptxToMarkdown(createNotesPptx(), { title: "notes-sample" });
 
   assert.match(result.markdown, /^# notes-sample\n\n## Slide 1: Notes Slide/m);
   assert.match(result.markdown, /\nSlide body\n/);
@@ -213,7 +213,7 @@ test("emits speaker notes by default and honors includeNotes false", () => {
   assert.equal(result.summary.textBlocks, 3);
   assert.equal(result.summary.notesSlides, 1);
 
-  const withoutNotes = convertPptxToMarkdown(createNotesPptx(), {
+  const withoutNotes = await convertPptxToMarkdown(createNotesPptx(), {
     title: "notes-sample",
     includeNotes: false
   });
@@ -221,8 +221,8 @@ test("emits speaker notes by default and honors includeNotes false", () => {
   assert.doesNotMatch(withoutNotes.markdown, /Speaker note line one/);
 });
 
-test("extracts resolved image assets and renders placeholders or links", () => {
-  const result = convertPptxToMarkdown(createImagePptx(), { title: "image-sample" });
+test("extracts resolved image assets and renders placeholders or links", async () => {
+  const result = await convertPptxToMarkdown(createImagePptx(), { title: "image-sample" });
 
   assert.match(result.markdown, /^# image-sample\n\n## Slide 1: Image Slide/m);
   assert.match(result.markdown, /\[Image: Diagram alt\]/);
@@ -237,15 +237,15 @@ test("extracts resolved image assets and renders placeholders or links", () => {
   assert.deepEqual(Array.from(result.assets[0].bytes), [137, 80, 78, 71]);
   assert.equal(result.summary.imageAssets, 1);
 
-  const linked = convertPptxToMarkdown(createImagePptx(), {
+  const linked = await convertPptxToMarkdown(createImagePptx(), {
     title: "image-sample",
     imagePathResolver: (asset) => `assets/${asset.sourcePath}`
   });
   assert.match(linked.markdown, /!\[Diagram alt\]\(assets\/ppt\/media\/image1\.png\)/);
 });
 
-test("projects structured summary JSON and asset manifest data", () => {
-  const result = convertPptxToMarkdown(createImagePptx(), { title: "image-sample" });
+test("projects structured summary JSON and asset manifest data", async () => {
+  const result = await convertPptxToMarkdown(createImagePptx(), { title: "image-sample" });
 
   assert.equal(createPptx2MdSummaryText(result), [
     "slides: 1",
@@ -305,8 +305,8 @@ test("projects structured summary JSON and asset manifest data", () => {
   });
 });
 
-test("reports unsupported video picture objects as diagnostics", () => {
-  const result = convertPptxToMarkdown(createVideoPptx(), { title: "video-sample" });
+test("reports unsupported video picture objects as diagnostics", async () => {
+  const result = await convertPptxToMarkdown(createVideoPptx(), { title: "video-sample" });
 
   assert.match(result.markdown, /^# video-sample\n\n## Slide 1: Video Slide/m);
   assert.equal(result.assets.length, 0);
@@ -316,15 +316,15 @@ test("reports unsupported video picture objects as diagnostics", () => {
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
   assert.doesNotMatch(result.markdown, /unsupported-video/);
 
-  const debug = convertPptxToMarkdown(createVideoPptx(), {
+  const debug = await convertPptxToMarkdown(createVideoPptx(), {
     title: "video-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: unsupported-video source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("reports unsupported audio picture objects as diagnostics", () => {
-  const result = convertPptxToMarkdown(createAudioPptx(), { title: "audio-sample" });
+test("reports unsupported audio picture objects as diagnostics", async () => {
+  const result = await convertPptxToMarkdown(createAudioPptx(), { title: "audio-sample" });
 
   assert.match(result.markdown, /^# audio-sample\n\n## Slide 1: Audio Slide/m);
   assert.equal(result.assets.length, 0);
@@ -333,15 +333,15 @@ test("reports unsupported audio picture objects as diagnostics", () => {
   assert.equal(result.diagnostics[0].code, "unsupported-audio");
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
 
-  const debug = convertPptxToMarkdown(createAudioPptx(), {
+  const debug = await convertPptxToMarkdown(createAudioPptx(), {
     title: "audio-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: unsupported-audio source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("reports unsupported OLE picture objects as diagnostics", () => {
-  const result = convertPptxToMarkdown(createOleObjectPptx(), { title: "ole-sample" });
+test("reports unsupported OLE picture objects as diagnostics", async () => {
+  const result = await convertPptxToMarkdown(createOleObjectPptx(), { title: "ole-sample" });
 
   assert.match(result.markdown, /^# ole-sample\n\n## Slide 1: OLE Slide/m);
   assert.equal(result.assets.length, 0);
@@ -350,15 +350,15 @@ test("reports unsupported OLE picture objects as diagnostics", () => {
   assert.equal(result.diagnostics[0].code, "unsupported-ole-object");
   assert.equal(result.diagnostics[0].source, "ppt/slides/slide1.xml");
 
-  const debug = convertPptxToMarkdown(createOleObjectPptx(), {
+  const debug = await convertPptxToMarkdown(createOleObjectPptx(), {
     title: "ole-sample",
     includeUnsupportedComments: true
   });
   assert.match(debug.markdown, /<!-- warning: unsupported-ole-object source=ppt\/slides\/slide1\.xml:/);
 });
 
-test("renders slide comments as Markdown comments section", () => {
-  const result = convertPptxToMarkdown(createCommentsPptx(), { title: "comment-sample" });
+test("renders slide comments as Markdown comments section", async () => {
+  const result = await convertPptxToMarkdown(createCommentsPptx(), { title: "comment-sample" });
 
   assert.match(result.markdown, /^# comment-sample\n\n## Slide 1: Comment Slide/m);
   assert.match(result.markdown, /Visible slide body/);
@@ -368,15 +368,15 @@ test("renders slide comments as Markdown comments section", () => {
   assert.equal(result.summary.warnings, 0);
   assert.deepEqual(result.diagnostics, []);
 
-  const debug = convertPptxToMarkdown(createCommentsPptx(), {
+  const debug = await convertPptxToMarkdown(createCommentsPptx(), {
     title: "comment-sample",
     includeUnsupportedComments: true
   });
   assert.doesNotMatch(debug.markdown, /unsupported-comments/);
 });
 
-test("tracks diagnostics and can render diagnostic comments in debug mode", () => {
-  const result = convertPptxToMarkdown(createMissingImagePptx(), { title: "diagnostic-sample" });
+test("tracks diagnostics and can render diagnostic comments in debug mode", async () => {
+  const result = await convertPptxToMarkdown(createMissingImagePptx(), { title: "diagnostic-sample" });
 
   assert.equal(result.summary.diagnostics, 1);
   assert.equal(result.summary.warnings, 1);
@@ -384,7 +384,7 @@ test("tracks diagnostics and can render diagnostic comments in debug mode", () =
   assert.equal(result.diagnostics[0].code, "missing-image-part");
   assert.doesNotMatch(result.markdown, /<!-- warning:/);
 
-  const debug = convertPptxToMarkdown(createMissingImagePptx(), {
+  const debug = await convertPptxToMarkdown(createMissingImagePptx(), {
     title: "diagnostic-sample",
     includeUnsupportedComments: true
   });

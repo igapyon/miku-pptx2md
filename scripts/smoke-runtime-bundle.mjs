@@ -23,7 +23,7 @@ if (typeof runtime.createPptx2MdAssetsManifestData !== "function") {
   throw new Error("Runtime bundle does not export createPptx2MdAssetsManifestData.");
 }
 
-const result = runtime.convertPptxToMarkdown(createMinimalPptx(), { title: "runtime-smoke" });
+const result = await runtime.convertPptxToMarkdown(createMinimalPptx(), { title: "runtime-smoke" });
 if (!result.markdown.includes("# runtime-smoke") || !result.markdown.includes("## Slide 1: Overview")) {
   throw new Error("Runtime bundle conversion smoke output did not include expected Markdown.");
 }

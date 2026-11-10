@@ -33,7 +33,7 @@ interpretation and Markdown conversion policy in this repository.
 
 ## Node CLI
 
-The CLI converts one input presentation at a time and writes Markdown to a file.
+The CLI converts one input presentation at a time and writes Markdown to a file. Node.js 22 or newer is required.
 
 ```bash
 npm run cli -- ./sample.pptx --out ./sample.md
@@ -73,7 +73,7 @@ parsing, file I/O, and stderr/stdout behavior.
 
 Current core-facing entry points are:
 
-- `convertPptxToMarkdown(bytes, options)`: converts local PPTX bytes into Markdown, metadata, summary counts, diagnostics, and resolved image assets.
+- `convertPptxToMarkdown(bytes, options)`: asynchronously converts local PPTX bytes into Markdown, metadata, summary counts, diagnostics, and resolved image assets. It returns `Promise<Pptx2MdResult>`.
 - `createPptx2MdSummaryText(result)`: projects a conversion result into the human-readable summary artifact.
 - `createPptx2MdSummaryJsonData(result)`: projects a conversion result into the schema-versioned summary JSON artifact.
 - `createPptx2MdAssetsManifestData(assets)`: projects resolved assets into the schema-versioned sidecar asset manifest.
